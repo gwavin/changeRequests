@@ -1,0 +1,26 @@
+{
+  "requestTitle": "Add example magnesium sulphate IV set",
+  "requestingSite": "Example Hospital",
+  "requesterName": "Example Requester",
+  "requesterContact": "requester@example.invalid",
+  "targetDate": "",
+  "overallReason": "Create a structured request example for an IV set add request.",
+  "typeId": "ivSet",
+  "typeLabel": "IV Set",
+  "items": [
+    {
+      "ivSetName": "Magnesium sulphate infusion example",
+      "drugDiluent": "Example only: confirm concentration and diluent against approved local guideline.",
+      "rateAdministration": "Example only: rate and monitoring to be verified locally.",
+      "action": "Add",
+      "existingItem": "",
+      "currentValue": "No local IV set currently available.",
+      "requestedValue": "Add IV set with locally approved concentration, diluent, rate, and monitoring instructions.",
+      "reason": "Support safer standardised prescribing.",
+      "referenceChecked": "Example local guideline.",
+      "scopeFacilities": "Example Hospital.",
+      "localNotes": "Fake data for demonstration.",
+      "validationNotes": "Clinical validation, build validation, and test patient order review required."
+    }
+  ]
+}

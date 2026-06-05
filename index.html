@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MN-CMS Change Request</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23176b5f'/%3E%3Cpath d='M18 33h28M32 19v28' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="section-label">MN-CMS</p>
+      <h1>Change request builder</h1>
+      <p class="lede">Create a clear local change request, then export a readable HTML review document and CSV data for the changelog workflow.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="type-choice" id="typeChoice">
+      <div>
+        <p class="section-label">Start here</p>
+        <h2>What type of change are you requesting?</h2>
+      </div>
+      <div class="type-grid" id="typeGrid"></div>
+    </section>
+
+    <div class="sticky-type hidden" id="stickyType">
+      <strong id="currentTypeText">Current request type:</strong>
+      <button type="button" class="secondary small" id="changeTypeButton">Change request type</button>
+    </div>
+
+    <form id="requestForm" class="hidden">
+      <section class="form-section">
+        <div>
+          <p class="section-label">Request details</p>
+          <h2 id="requestTypeHeading">Request</h2>
+          <p id="typeExplanation" class="helper"></p>
+        </div>
+        <div class="guidance-panel" id="typeGuidance"></div>
+
+        <div class="field-grid">
+          <label>
+            <span>Request title</span>
+            <input id="requestTitle" name="requestTitle" placeholder="Example: Add Humulin M3 high-alert review to Order Catalog">
+            <small>Use a short descriptive title. The formal changelog/tracker number will be added later by the MN-CMS team.</small>
+          </label>
+          <label>
+            <span>Requesting site or team</span>
+            <input id="requestingSite" name="requestingSite" placeholder="Example: Midland Regional Hospital Tullamore">
+            <small>Name the site, ward, department, or team requesting the change.</small>
+          </label>
+          <label>
+            <span>Requester name</span>
+            <input id="requesterName" name="requesterName" placeholder="Name of person completing this request">
+          </label>
+          <label>
+            <span>Requester contact</span>
+            <input id="requesterContact" name="requesterContact" placeholder="Email or phone extension">
+          </label>
+          <label>
+            <span>Target date or urgency</span>
+            <input id="targetDate" name="targetDate" placeholder="Example: Needed before July formulary update">
+            <small>Include a date only if there is a real operational or clinical reason.</small>
+          </label>
+          <label>
+            <span>Overall clinical reason</span>
+            <textarea id="overallReason" name="overallReason" rows="4" placeholder="Explain why this change is needed and what problem it solves."></textarea>
+            <small>Plain English is fine. If there is a patient safety, formulary, stock, guideline, or workflow reason, say that here.</small>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-row">
+          <div>
+            <p class="section-label">Design items</p>
+            <h2>Requested changes</h2>
+            <p class="helper">Add one item for each build change. If you are not sure about a technical field, write “not sure” rather than leaving the reason, scope, or requested outcome unclear.</p>
+          </div>
+          <button type="button" id="addItemButton">Add item</button>
+        </div>
+        <div id="itemsContainer"></div>
+      </section>
+
+      <section class="form-section">
+        <div>
+          <p class="section-label">Drafts</p>
+          <h2>Local draft in this browser</h2>
+          <p class="helper warning">Drafts are stored only in this browser profile. They are not submitted or visible to other users.</p>
+        </div>
+        <div class="button-row">
+          <button type="button" class="secondary" id="saveDraftButton">Save draft in this browser</button>
+          <button type="button" class="secondary" id="loadDraftButton">Load draft from this browser</button>
+          <button type="button" class="secondary danger" id="clearDraftButton">Clear local draft</button>
+        </div>
+        <p class="status" id="draftStatus" role="status"></p>
+      </section>
+
+      <section class="form-section">
+        <div>
+          <p class="section-label">Before you submit</p>
+          <h2>Checklist</h2>
+        </div>
+        <ul class="checklist">
+          <li>Is the clinical reason clear?</li>
+          <li>Is the affected site/scope clear?</li>
+          <li>Are current and requested values clearly separated?</li>
+          <li>Has a reference/local guideline been provided where relevant?</li>
+          <li>Are validation expectations stated?</li>
+        </ul>
+      </section>
+
+      <section class="form-section">
+        <div>
+          <p class="section-label">Outputs</p>
+          <h2>Generate and export</h2>
+          <p class="helper">Static pages cannot silently save to a shared folder. Download HTML for human review and CSV for tabular handoff.</p>
+        </div>
+        <div class="button-grid">
+          <button type="button" id="downloadCsvButton">Download CSV</button>
+          <button type="button" id="downloadHtmlButton">Download HTML review</button>
+        </div>
+        <p class="status" id="exportStatus" role="status"></p>
+        <label>
+          <span>Preview</span>
+          <textarea id="outputPreview" rows="14" readonly></textarea>
+        </label>
+      </section>
+    </form>
+  </main>
+
+  <template id="itemTemplate">
+    <article class="item-card">
+      <div class="item-heading">
+        <h3></h3>
+        <div class="item-actions">
+          <button type="button" class="secondary duplicate-item">Duplicate</button>
+          <button type="button" class="secondary danger remove-item">Remove</button>
+        </div>
+      </div>
+      <div class="item-fields"></div>
+    </article>
+  </template>
+
+  <script src="assets/js/schemas.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/exporters.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

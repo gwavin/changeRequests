@@ -1,0 +1,27 @@
+{
+  "requestTitle": "Add Humulin M3 high-alert review to Order Catalog",
+  "requestingSite": "Example Hospital",
+  "requesterName": "Example Requester",
+  "requesterContact": "requester@example.invalid",
+  "targetDate": "Before next formulary update",
+  "overallReason": "Local medicines governance has requested clearer search and safety wording for Humulin M3.",
+  "typeId": "orderCatalog",
+  "typeLabel": "Order Catalog",
+  "items": [
+    {
+      "catalogItemName": "Humulin M3",
+      "synonyms": "Insulin isophane biphasic; Humulin M3 KwikPen",
+      "orderableType": "Medication",
+      "highAlertOrRestriction": "High-alert insulin medicine. Local verification required before promotion.",
+      "action": "Modify",
+      "existingItem": "Humulin M3 orderable",
+      "currentValue": "Search results do not clearly distinguish formulation and local high-alert review.",
+      "requestedValue": "Order Catalog item should include agreed synonym and high-alert review wording.",
+      "reason": "Reduce wrong-insulin selection risk.",
+      "referenceChecked": "Example local insulin guideline.",
+      "scopeFacilities": "Example Hospital adult inpatient areas.",
+      "localNotes": "Use fake sample data only.",
+      "validationNotes": "Requester and local Informatics Pharmacist to confirm search, wording, and order behaviour in test."
+    }
+  ]
+}
