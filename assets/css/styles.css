@@ -394,6 +394,55 @@ button.small {
   font-size: 0.9rem;
 }
 
+.site-field output {
+  display: block;
+  min-height: 24px;
+  padding: 8px 10px;
+  color: var(--accent-strong);
+  background: #eef6f3;
+  border-left: 3px solid var(--accent);
+  font-weight: 700;
+}
+
+.field-help {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  min-height: 20px;
+  margin-left: 6px;
+  padding: 0;
+  color: #fff;
+  background: var(--accent);
+  border: 0;
+  border-radius: 50%;
+  font: 700 12px/1 Arial, sans-serif;
+  vertical-align: middle;
+}
+
+.field-tooltip {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  left: 50%;
+  display: none;
+  width: min(300px, 75vw);
+  padding: 9px 11px;
+  color: #fff;
+  background: #17212b;
+  border-radius: 5px;
+  box-shadow: 0 6px 18px rgba(23, 33, 43, .24);
+  font: 400 13px/1.4 "Segoe UI", Arial, sans-serif;
+  text-align: left;
+  transform: translateX(-50%);
+}
+
+.field-help:hover .field-tooltip,
+.field-help:focus-visible .field-tooltip,
+.field-help[aria-expanded="true"] .field-tooltip {
+  display: block;
+}
+
 @media (max-width: 720px) {
   .workflow { grid-template-columns: 1fr; }
   .workflow span { display: none; border: 0; }

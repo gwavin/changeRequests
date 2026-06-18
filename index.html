@@ -57,15 +57,12 @@
             <input id="requestTitle" name="requestTitle" placeholder="Example: Add Humulin M3 high-alert review to Order Catalog">
             <small>Use a short descriptive title. The formal changelog/tracker number will be added later by the MN-CMS team.</small>
           </label>
-          <label>
-            <span>Requesting site or team <b class="required">Required</b></span>
-            <input id="requestingSite" name="requestingSite" placeholder="Example: Midland Regional Hospital Tullamore">
-            <small>Name the site, ward, department, or team requesting the change.</small>
-          </label>
-          <label>
-            <span>Site code <b class="required">Required</b></span>
-            <input id="siteCode" name="siteCode" maxlength="16" placeholder="Example: NMH">
-            <small>The short site code used in filenames. Ask your local informatics pharmacist if unsure.</small>
+          <label class="site-field">
+            <span>Requesting site <b class="required">Required</b></span>
+            <select id="siteCode" name="siteCode" required><option value="">Choose a site</option></select>
+            <output id="requestingSiteName" for="siteCode">No site selected</output>
+            <input id="requestingSite" name="requestingSite" type="hidden">
+            <small>Choose the responsible hospital, or National / All Sites for a shared request.</small>
           </label>
           <label>
             <span>Requester name <b class="required">Required</b></span>

@@ -9,6 +9,17 @@
 
   var metadataIds = ["shortSubject", "requestTitle", "requestingSite", "siteCode", "requesterName", "requesterContact", "urgency", "overallReason"];
   var elements = {};
+  var metadataGuidance = {
+    shortSubject: "Enter only the medicine, order or feature name. This becomes the first part of the filename; do not add CR, site or date.",
+    requestTitle: "Summarise the requested change in one sentence so reviewers can identify its purpose.",
+    siteCode: "Choose the hospital responsible for requesting and validating this change, or National / All Sites for a shared request.",
+    requesterName: "Enter the person whom reviewers can contact to clarify this request.",
+    requesterContact: "Enter a work email address or telephone extension. Do not enter patient contact details.",
+    urgency: "Choose the planning priority. This does not bypass clinical or technical review.",
+    overallReason: "Explain the current problem, risk or workflow need in plain language.",
+    privacyConfirmed: "Confirm that the request contains no patient-identifiable information.",
+    requestSummary: "Describe the result you need in ordinary language. It is acceptable to say that the technical solution needs discussion."
+  };
 
   function byId(id) {
     return document.getElementById(id);
@@ -18,6 +29,56 @@
     ["typeGrid", "typeChoice", "stickyType", "currentTypeText", "requestForm", "requestTypeHeading", "typeExplanation", "typeGuidance", "itemsContainer", "itemTemplate", "outputPreview", "exportStatus", "draftStatus", "readinessPanel", "filenamePreview"].forEach(function (id) {
       elements[id] = byId(id);
     });
+  }
+
+  function addFieldHelp(label, text, id) {
+    if (!label || !text || label.querySelector(".field-help")) return;
+    var labelText = label.querySelector(":scope > span");
+    if (!labelText) return;
+    var help = document.createElement("button");
+    var tooltipId = "field-help-" + id;
+    help.type = "button";
+    help.className = "field-help";
+    help.setAttribute("aria-label", "Help for " + labelText.textContent.replace(/Required/g, "").trim());
+    help.setAttribute("aria-describedby", tooltipId);
+    help.setAttribute("aria-expanded", "false");
+    help.textContent = "i";
+    var tooltip = document.createElement("span");
+    tooltip.id = tooltipId;
+    tooltip.className = "field-tooltip";
+    tooltip.setAttribute("role", "tooltip");
+    tooltip.textContent = text;
+    help.appendChild(tooltip);
+    help.addEventListener("click", function () {
+      help.setAttribute("aria-expanded", help.getAttribute("aria-expanded") === "true" ? "false" : "true");
+    });
+    labelText.appendChild(help);
+  }
+
+  function initFieldGuidance() {
+    Object.keys(metadataGuidance).forEach(function (id) {
+      if (id === "requestSummary") return;
+      var control = byId(id);
+      var label = control && (control.matches && control.matches("label") ? control : control.closest("label"));
+      addFieldHelp(label, metadataGuidance[id], id);
+    });
+  }
+
+  function initSites() {
+    var select = byId("siteCode");
+    window.MnCmsCore.sites.forEach(function (site) {
+      var option = document.createElement("option");
+      option.value = site.code;
+      option.textContent = site.code + " — " + site.name;
+      select.appendChild(option);
+    });
+  }
+
+  function normaliseSite() {
+    var selected = window.MnCmsCore.siteForCode(byId("siteCode").value);
+    byId("siteCode").value = selected ? selected.code : "";
+    byId("requestingSite").value = selected ? selected.name : "";
+    byId("requestingSiteName").textContent = selected ? selected.name : "No site selected";
   }
 
   function getFields() {
@@ -70,6 +131,7 @@
     metadataIds.forEach(function (id) {
       byId(id).value = data && data[id] ? data[id] : "";
     });
+    normaliseSite();
   }
 
   function buildRequestData() {
@@ -150,6 +212,7 @@
       node.querySelector(".remove-item").addEventListener("click", function () { removeItem(index); });
       var fieldContainer = node.querySelector(".item-fields");
       var summary = node.querySelector(".request-summary");
+      addFieldHelp(node.querySelector(".item-intent"), metadataGuidance.requestSummary, "item-" + index + "-request-summary");
       var technicalDetails = node.querySelector(".technical-details");
       var livePreview;
       var activePreviewTab = "details";
@@ -222,7 +285,7 @@
           control.rows = 3;
         } else {
           control = document.createElement("input");
-          control.type = "text";
+          control.type = field.inputType || "text";
         }
         control.dataset.fieldKey = field.key;
         control.value = item[field.key] || "";
@@ -238,6 +301,7 @@
           refreshPreview();
         });
         label.innerHTML = "<span>" + field.label + "</span>";
+        addFieldHelp(label, field.helper || ("Enter the requested " + field.label.toLowerCase() + ". Leave it unspecified if it requires team discussion."), "item-" + index + "-" + field.key);
         label.appendChild(control);
         if (field.helper) {
           var small = document.createElement("small");
@@ -362,8 +426,13 @@
     });
     byId("addItemButton").addEventListener("click", function () { addItem(); });
     metadataIds.forEach(function (id) {
+      if (id === "siteCode") return;
       byId(id).addEventListener("input", refreshPreview);
       byId(id).addEventListener("change", refreshPreview);
+    });
+    byId("siteCode").addEventListener("change", function () {
+      normaliseSite();
+      refreshPreview();
     });
     byId("privacyConfirmed").addEventListener("change", refreshPreview);
     byId("downloadCsvButton").addEventListener("click", function () {
@@ -410,6 +479,8 @@
 
   function init() {
     initElements();
+    initSites();
+    initFieldGuidance();
     renderTypeChoices();
     bindActions();
   }
