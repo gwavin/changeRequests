@@ -41,23 +41,27 @@
   }
 
   function fileBase(data) {
-    return today() + "-" + slug(data.requestTitle);
+    return window.MnCmsCore ? window.MnCmsCore.fileBase(data) : today() + "-" + slug(data.requestTitle);
   }
 
   function metadataLines(data) {
     return [
+      ["Discussion status", "For discussion — not approved"],
+      ["Suggested filename", fileBase(data)],
+      ["Short subject", data.shortSubject],
       ["Request title", data.requestTitle],
       ["CR type", data.typeLabel],
       ["Requesting site/team", data.requestingSite],
+      ["Site code", data.siteCode],
       ["Requester", data.requesterName],
       ["Requester contact", data.requesterContact],
-      ["Target date or urgency", data.targetDate],
+      ["Urgency", data.urgency],
       ["Overall clinical reason", data.overallReason]
     ];
   }
 
   function itemLines(item, index, fields) {
-    var lines = ["### Item " + (index + 1)];
+    var lines = ["### Item " + (index + 1), "", "**Requested outcome:** " + valueOrBlank(item.requestSummary)];
     fields.forEach(function (field) {
       if (!field.key) {
         return;
@@ -264,7 +268,7 @@
     if (current.rows.length) {
       sections.push(current);
     }
-    return "<article class=\"item\"><header><p>Item " + (index + 1) + "</p><h2>" + escapeHtml(item.request || item.action || "Requested change") + "</h2></header>" + builtPreview(data, item) + sections.map(function (section) {
+    return "<article class=\"item\"><header><p>Item " + (index + 1) + "</p><h2>" + escapeHtml(item.requestSummary || item.request || item.action || "Requested change") + "</h2></header>" + builtPreview(data, item) + sections.map(function (section) {
       return "<section class=\"detail-section\"><h3>" + escapeHtml(section.title) + "</h3><dl>" + section.rows.join("") + "</dl></section>";
     }).join("") + "</article>";
   }

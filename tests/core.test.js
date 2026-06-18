@@ -1,0 +1,64 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+
+global.window = {};
+require("../assets/js/core.js");
+
+const core = global.window.MnCmsCore;
+
+test("builds the requested filename from subject, request type, site and date", () => {
+  assert.equal(core.fileBase({
+    shortSubject: "Labetalol",
+    typeId: "orderSentence",
+    siteCode: "NMH",
+    requestDate: "2026-06-18"
+  }), "Labetalol OS CR - NMH 18062026");
+});
+
+test("sanitises unsafe filename characters and redundant CR wording", () => {
+  assert.equal(core.fileBase({
+    shortSubject: "Labetalol: OS CR?",
+    typeId: "orderSentence",
+    siteCode: "NMH/CHO",
+    requestDate: "2026-06-18"
+  }), "Labetalol OS CR - NMH-CHO 18062026");
+});
+
+test("essential validation allows technical uncertainty but requires intent and governance", () => {
+  const result = core.validate({
+    typeId: "orderSentence",
+    shortSubject: "Labetalol",
+    requestTitle: "Add an order sentence for labetalol",
+    requestingSite: "National Maternity Hospital",
+    siteCode: "NMH",
+    requesterName: "Example User",
+    overallReason: "Staff currently construct this order manually.",
+    privacyConfirmed: true,
+    items: [{ action: "Add", requestSummary: "Not sure of technical build; please discuss." }]
+  });
+  assert.deepEqual(result.errors, []);
+});
+
+test("essential validation identifies missing discussion-ready information", () => {
+  const result = core.validate({ typeId: "ivSet", items: [{}] });
+  assert.ok(result.errors.some((error) => error.field === "shortSubject"));
+  assert.ok(result.errors.some((error) => error.field === "privacyConfirmed"));
+  assert.ok(result.errors.some((error) => error.field === "items"));
+});
+
+test("readiness distinguishes required information from optional expert detail", () => {
+  const result = core.readiness({
+    typeId: "orderCatalog",
+    shortSubject: "Labetalol",
+    requestTitle: "Add labetalol",
+    requestingSite: "NMH",
+    siteCode: "NMH",
+    requesterName: "Example User",
+    overallReason: "Needed for prescribing.",
+    privacyConfirmed: true,
+    items: [{ action: "Add", requestSummary: "Add labetalol to the catalogue." }]
+  }, [{ key: "genericName" }, { key: "strength" }]);
+  assert.equal(result.blocking, 0);
+  assert.equal(result.optionalCompleted, 0);
+  assert.equal(result.optionalTotal, 2);
+});

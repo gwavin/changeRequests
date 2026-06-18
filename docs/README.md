@@ -11,14 +11,17 @@ The app has no external dependencies, CDN calls, package install, or build step.
 ## Creating a Request
 
 1. Open `index.html`.
-2. Choose the request type first: Order Catalog, Order Sentence, IV Set, Care Plan, or SN Anaesthesia.
-3. Complete the request title and requester details.
-4. Add one design item for each requested build change.
-5. Use Add, Modify, or Remove to make the requested action explicit.
-6. Complete reason, reference, scope, local notes, and validation notes for each item.
-7. Review the checklist before exporting.
+2. Choose **Guide me** or **Show all fields**. You can switch at any time.
+3. Choose the request type: Order Catalog, Order Sentence, IV Set, Care Plan, or SN Anaesthesia.
+4. Complete the essential request and requester details.
+5. Describe the outcome needed in ordinary language for each requested change.
+6. Add optional technical detail where known; leave fields as **Not specified / discuss** where uncertain.
+7. Confirm that no patient-identifiable information is included.
+8. Review readiness and the generated filename before exporting.
 
-The request title is not a changelog or tracker number. The formal number should be added later by the MN-CMS team.
+The request is created for discussion and is not approved or added to the changelog by this tool. The formal number should be added later by the MN-CMS team.
+
+Files are named automatically using `<short subject> <request type> CR - <site code> <DDMMYYYY>`, for example `Labetalol OS CR - NMH 18062026.html`.
 
 The Order Catalog, Order Sentence, IV Set, and SN Anaesthesia item fields mirror the design columns and dropdown values from the 2026-06-05 Excel templates. The Care Plan section is still inferred because no Care Plan Excel template was supplied.
 
@@ -34,10 +37,10 @@ The HTML output is the preferred human-readable review format. For IV Set and SN
 ## Recommended Static Workflow
 
 1. Complete the form.
-2. Generate outputs.
-3. Save the HTML review document into the changelog/request folder.
-4. Attach the CSV to the build ticket if useful.
-5. Use the HTML review document for site review, clarification, and approval.
+2. Download the HTML review document and optional CSV.
+3. Attach the HTML document to the Agenda item for team discussion.
+4. Move accepted work through the existing Agenda/Planner process to the changelog.
+5. Use the approved request for build, checking, testing, and clinical sign-off.
 
 Suggested folder arrangement:
 

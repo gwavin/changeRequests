@@ -31,6 +31,45 @@ main {
   margin: 0 auto;
 }
 
+.workflow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  overflow: hidden;
+  margin: 4px 0 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.workflow span { padding: 12px 10px; color: var(--muted); font-size: .78rem; font-weight: 700; text-align: center; border-right: 1px solid var(--border); }
+.workflow span:last-child { border-right: 0; }
+.workflow .active { color: #fff; background: var(--accent); }
+
+.mode-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 18px 20px; background: #eaf4f1; border: 1px solid #bdd8d1; border-radius: var(--radius); }
+.mode-bar h2 { margin: 0 0 2px; font-size: 1.1rem; }
+.mode-bar p { margin: 0; }
+.segmented { display: flex; padding: 3px; background: #fff; border: 1px solid #b8cbc5; border-radius: 8px; }
+.segmented button { min-height: 34px; background: transparent; color: var(--accent); border-color: transparent; }
+.segmented button.active { color: #fff; background: var(--accent); }
+.required { display: inline-block; margin-left: 5px; color: #815714; font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+.help-drawer, .technical-details { margin-top: 18px; border: 1px solid var(--border); border-radius: 7px; background: #fff; }
+.help-drawer summary, .technical-details summary { padding: 12px 14px; color: var(--accent-strong); font-weight: 750; cursor: pointer; }
+.help-drawer p { padding: 0 14px 12px; margin: 0; color: var(--muted); }
+.technical-details summary span { float: right; color: var(--muted); font-size: .82rem; font-weight: 500; }
+.technical-details .item-fields { padding: 0 14px 14px; }
+.item-intent { margin-top: 16px; }
+.readiness { padding: 15px 17px; border-radius: 7px; }
+.readiness strong { font-size: 1.05rem; }
+.readiness p, .readiness ul { margin: 6px 0 0; }
+.readiness.ready { color: #174f3c; background: #e8f5ef; border: 1px solid #a8d5c2; }
+.readiness.needs-work { color: #684c17; background: #fff7df; border: 1px solid #ecd38a; }
+.privacy-check { display: flex; grid-template-columns: auto 1fr; align-items: flex-start; margin-top: 16px; padding: 13px; border: 1px solid var(--border); border-radius: 7px; }
+.privacy-check input { width: auto; margin-top: 4px; }
+.filename-preview { margin: 14px 0; padding: 14px 16px; background: #f1f7f5; border-left: 4px solid var(--accent); }
+.filename-preview span, .filename-preview strong { display: block; }
+.filename-preview span { color: var(--muted); font-size: .8rem; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+
 .app-header {
   padding: 36px 0 20px;
 }
@@ -311,6 +350,11 @@ button.small {
 }
 
 @media (max-width: 720px) {
+  .workflow { grid-template-columns: 1fr; }
+  .workflow span { display: none; border: 0; }
+  .workflow .active { display: block; }
+  .mode-bar { align-items: stretch; flex-direction: column; }
+  .segmented button { flex: 1; }
   .field-grid,
   .item-fields {
     grid-template-columns: 1fr;

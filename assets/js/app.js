@@ -3,10 +3,11 @@
 
   var state = {
     typeId: "",
-    items: []
+    items: [],
+    mode: "guided"
   };
 
-  var metadataIds = ["requestTitle", "requestingSite", "requesterName", "requesterContact", "targetDate", "overallReason"];
+  var metadataIds = ["shortSubject", "requestTitle", "requestingSite", "siteCode", "requesterName", "requesterContact", "urgency", "overallReason"];
   var elements = {};
 
   function byId(id) {
@@ -14,7 +15,7 @@
   }
 
   function initElements() {
-    ["typeGrid", "typeChoice", "stickyType", "currentTypeText", "requestForm", "requestTypeHeading", "typeExplanation", "typeGuidance", "itemsContainer", "itemTemplate", "outputPreview", "exportStatus", "draftStatus"].forEach(function (id) {
+    ["typeGrid", "typeChoice", "stickyType", "currentTypeText", "requestForm", "requestTypeHeading", "typeExplanation", "typeGuidance", "itemsContainer", "itemTemplate", "outputPreview", "exportStatus", "draftStatus", "readinessPanel", "filenamePreview"].forEach(function (id) {
       elements[id] = byId(id);
     });
   }
@@ -77,6 +78,8 @@
     data.typeId = state.typeId;
     data.typeLabel = type.label;
     data.items = state.items;
+    data.privacyConfirmed = byId("privacyConfirmed").checked;
+    data.requestDate = new Date().toISOString().slice(0, 10);
     data.generatedAt = new Date().toISOString();
     data.responsibilityStatement = window.MnCmsSchemas.responsibilityStatement;
     return data;
@@ -88,11 +91,9 @@
       if (!field.key) {
         return;
       }
-      item[field.key] = field.type === "select" ? field.options[0] : "";
-      if (field.key === "action") {
-        item[field.key] = "Modify";
-      }
+      item[field.key] = "";
     });
+    item.requestSummary = "";
     state.items.push(item);
     if (shouldRender !== false) {
       renderItems();
@@ -148,6 +149,11 @@
       node.querySelector(".duplicate-item").addEventListener("click", function () { duplicateItem(index); });
       node.querySelector(".remove-item").addEventListener("click", function () { removeItem(index); });
       var fieldContainer = node.querySelector(".item-fields");
+      var summary = node.querySelector(".request-summary");
+      var technicalDetails = node.querySelector(".technical-details");
+      summary.value = item.requestSummary || "";
+      summary.addEventListener("input", function () { item.requestSummary = summary.value; refreshPreview(); });
+      technicalDetails.open = state.mode === "expert";
 
       fields.forEach(function (field) {
         if (field.type === "heading") {
@@ -164,6 +170,10 @@
         var control;
         if (field.type === "select") {
           control = document.createElement("select");
+          var unknown = document.createElement("option");
+          unknown.value = "";
+          unknown.textContent = "Not specified / discuss";
+          control.appendChild(unknown);
           field.options.forEach(function (option) {
             var opt = document.createElement("option");
             opt.value = option;
@@ -206,6 +216,29 @@
       return;
     }
     elements.outputPreview.value = window.MnCmsExporters.markdown(buildRequestData(), getFields());
+    renderReadiness();
+  }
+
+  function renderReadiness() {
+    var data = buildRequestData();
+    var result = window.MnCmsCore.readiness(data, getFields());
+    var ready = result.blocking === 0;
+    elements.readinessPanel.className = "readiness " + (ready ? "ready" : "needs-work");
+    elements.readinessPanel.innerHTML = ready
+      ? "<strong>Ready for team discussion</strong><p>Essential information is present. Optional technical detail completed: " + result.optionalCompleted + " of " + result.optionalTotal + " fields.</p>"
+      : "<strong>" + result.blocking + " essential item" + (result.blocking === 1 ? "" : "s") + " still needed</strong><ul>" + result.errors.map(function (error) { return "<li>" + error.message + "</li>"; }).join("") + "</ul>";
+    elements.filenamePreview.textContent = data.shortSubject && data.siteCode ? window.MnCmsCore.fileBase(data) + ".html / .csv" : "Complete the short subject and site code above";
+    ["downloadCsvButton", "downloadHtmlButton"].forEach(function (id) { byId(id).disabled = !ready; });
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    var guided = mode === "guided";
+    byId("guidedModeButton").classList.toggle("active", guided);
+    byId("expertModeButton").classList.toggle("active", !guided);
+    byId("guidedModeButton").setAttribute("aria-pressed", String(guided));
+    byId("expertModeButton").setAttribute("aria-pressed", String(!guided));
+    document.querySelectorAll(".technical-details").forEach(function (detail) { detail.open = !guided; });
   }
 
   function copyText(text, successMessage) {
@@ -239,6 +272,12 @@
 
   function downloadFile(content, extension, mime) {
     var data = buildRequestData();
+    var validation = window.MnCmsCore.validate(data);
+    if (validation.errors.length) {
+      setStatus(elements.exportStatus, "Complete the essential discussion details before exporting.");
+      elements.readinessPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     var filename = window.MnCmsExporters.fileBase(data) + "." + extension;
     if (window.showSaveFilePicker) {
       saveWithPicker(content, filename, mime).catch(function () {
@@ -275,6 +314,8 @@
   }
 
   function bindActions() {
+    byId("guidedModeButton").addEventListener("click", function () { setMode("guided"); });
+    byId("expertModeButton").addEventListener("click", function () { setMode("expert"); });
     byId("changeTypeButton").addEventListener("click", function () {
       elements.typeChoice.classList.remove("hidden");
       elements.typeChoice.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -282,7 +323,9 @@
     byId("addItemButton").addEventListener("click", function () { addItem(); });
     metadataIds.forEach(function (id) {
       byId(id).addEventListener("input", refreshPreview);
+      byId(id).addEventListener("change", refreshPreview);
     });
+    byId("privacyConfirmed").addEventListener("change", refreshPreview);
     byId("downloadCsvButton").addEventListener("click", function () {
       downloadFile(window.MnCmsExporters.csv(buildRequestData(), getFields()), "csv", "text/csv");
     });
@@ -320,6 +363,7 @@
       addItem(false);
     }
     applyMetadata(draft);
+    byId("privacyConfirmed").checked = !!draft.privacyConfirmed;
     render();
     setStatus(elements.draftStatus, "Draft loaded.");
   }

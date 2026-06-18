@@ -17,6 +17,13 @@
   </header>
 
   <main>
+    <nav class="workflow" aria-label="Change request workflow">
+      <span class="active">1. Draft request</span><span>2. Add to Agenda</span><span>3. Team discussion</span><span>4. Accepted: changelog</span><span>5. Build &amp; validate</span>
+    </nav>
+    <section class="mode-bar" aria-labelledby="modeHeading">
+      <div><h2 id="modeHeading">How much guidance would you like?</h2><p class="helper">Change this at any time. Both modes create the same request.</p></div>
+      <div class="segmented" role="group" aria-label="Guidance mode"><button type="button" id="guidedModeButton" class="active" aria-pressed="true">Guide me</button><button type="button" id="expertModeButton" aria-pressed="false">Show all fields</button></div>
+    </section>
     <section class="type-choice" id="typeChoice">
       <div>
         <p class="section-label">Start here</p>
@@ -41,17 +48,27 @@
 
         <div class="field-grid">
           <label>
-            <span>Request title</span>
+            <span>Short subject <b class="required">Required</b></span>
+            <input id="shortSubject" name="shortSubject" placeholder="Example: Labetalol">
+            <small>Used to create the filename. Do not add “CR”, the request type, site, or date.</small>
+          </label>
+          <label>
+            <span>Request title <b class="required">Required</b></span>
             <input id="requestTitle" name="requestTitle" placeholder="Example: Add Humulin M3 high-alert review to Order Catalog">
             <small>Use a short descriptive title. The formal changelog/tracker number will be added later by the MN-CMS team.</small>
           </label>
           <label>
-            <span>Requesting site or team</span>
+            <span>Requesting site or team <b class="required">Required</b></span>
             <input id="requestingSite" name="requestingSite" placeholder="Example: Midland Regional Hospital Tullamore">
             <small>Name the site, ward, department, or team requesting the change.</small>
           </label>
           <label>
-            <span>Requester name</span>
+            <span>Site code <b class="required">Required</b></span>
+            <input id="siteCode" name="siteCode" maxlength="16" placeholder="Example: NMH">
+            <small>The short site code used in filenames. Ask your local informatics pharmacist if unsure.</small>
+          </label>
+          <label>
+            <span>Requester name <b class="required">Required</b></span>
             <input id="requesterName" name="requesterName" placeholder="Name of person completing this request">
           </label>
           <label>
@@ -59,16 +76,17 @@
             <input id="requesterContact" name="requesterContact" placeholder="Email or phone extension">
           </label>
           <label>
-            <span>Target date or urgency</span>
-            <input id="targetDate" name="targetDate" placeholder="Example: Needed before July formulary update">
-            <small>Include a date only if there is a real operational or clinical reason.</small>
+            <span>Urgency</span>
+            <select id="urgency" name="urgency"><option>Routine / no fixed date</option><option>Needed by a known date</option><option>Potential safety concern</option><option>Not sure</option></select>
+            <small>This helps plan discussion; it does not bypass review.</small>
           </label>
           <label>
-            <span>Overall clinical reason</span>
+            <span>Overall reason <b class="required">Required</b></span>
             <textarea id="overallReason" name="overallReason" rows="4" placeholder="Explain why this change is needed and what problem it solves."></textarea>
             <small>Plain English is fine. If there is a patient safety, formulary, stock, guideline, or workflow reason, say that here.</small>
           </label>
         </div>
+        <details class="help-drawer"><summary>Why are these details needed?</summary><p>The team needs to understand the problem before deciding the technical build. Technical certainty is not required; ordinary language is welcome.</p></details>
       </section>
 
       <section class="form-section">
@@ -81,6 +99,12 @@
           <button type="button" id="addItemButton">Add item</button>
         </div>
         <div id="itemsContainer"></div>
+      </section>
+
+      <section class="form-section">
+        <div><p class="section-label">Readiness</p><h2>Is this ready for discussion?</h2></div>
+        <div class="readiness" id="readinessPanel" role="status" aria-live="polite"></div>
+        <label class="privacy-check"><input type="checkbox" id="privacyConfirmed"><span>I confirm that this request contains no patient-identifiable information. <b class="required">Required</b></span></label>
       </section>
 
       <section class="form-section">
@@ -115,8 +139,9 @@
         <div>
           <p class="section-label">Outputs</p>
           <h2>Generate and export</h2>
-          <p class="helper">Static pages cannot silently save to a shared folder. Download HTML for human review and CSV for tabular handoff.</p>
+          <p class="helper">This creates a discussion document. It does not submit, approve, or add the change to the changelog.</p>
         </div>
+        <div class="filename-preview"><span>Your files will be named</span><strong id="filenamePreview">Complete the required details above</strong></div>
         <div class="button-grid">
           <button type="button" id="downloadCsvButton">Download CSV</button>
           <button type="button" id="downloadHtmlButton">Download HTML review</button>
@@ -139,10 +164,16 @@
           <button type="button" class="secondary danger remove-item">Remove</button>
         </div>
       </div>
-      <div class="item-fields"></div>
+      <label class="item-intent full">
+        <span>What would you like to happen? <b class="required">Required</b></span>
+        <textarea class="request-summary" rows="3" placeholder="Describe the result you need in ordinary language. It is fine to explain what is wrong today and say that you are unsure of the technical solution."></textarea>
+        <small>Example: “Staff should be able to choose the usual labetalol dose without typing it manually. I am not sure which build change is needed.”</small>
+      </label>
+      <details class="technical-details"><summary>Technical and build details <span>Optional—complete what you know</span></summary><div class="item-fields"></div></details>
     </article>
   </template>
 
+  <script src="assets/js/core.js"></script>
   <script src="assets/js/schemas.js"></script>
   <script src="assets/js/storage.js"></script>
   <script src="assets/js/exporters.js"></script>
