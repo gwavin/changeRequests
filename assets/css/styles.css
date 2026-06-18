@@ -70,6 +70,22 @@ main {
 .filename-preview span { color: var(--muted); font-size: .8rem; }
 button:disabled { cursor: not-allowed; opacity: .45; }
 
+.iv-live-preview { margin-top: 18px; }
+.iv-draft-preview { overflow: hidden; border: 1px solid #9fb4c4; border-radius: 8px; background: #fff; }
+.iv-preview-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; color: #fff; background: #1f4e79; }
+.iv-preview-title span, .iv-preview-title strong { display: block; }
+.iv-preview-title span { color: #dcecf8; font-size: .72rem; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
+.iv-preview-title strong { margin-top: 2px; font-size: 1rem; }
+.iv-preview-title small { color: #dcecf8; text-align: right; }
+.iv-preview-scroll { overflow-x: auto; padding: 12px; }
+.iv-summary-table, .iv-detail-table { width: 100%; min-width: 760px; border-collapse: collapse; color: #17212b; font-size: .82rem; }
+.iv-detail-table { margin-top: 12px; }
+.iv-summary-table th, .iv-detail-table th { padding: 8px; color: #fff; background: #2f6da8; border: 1px solid #9aa9b5; text-align: left; vertical-align: top; }
+.iv-summary-table td, .iv-detail-table td { min-width: 100px; padding: 8px; background: #fff; border: 1px solid #9aa9b5; vertical-align: top; }
+.iv-summary-table .iv-description { color: #123d5a; font-weight: 800; }
+.iv-detail-table .iv-section-heading { background: #1f4e79; font-size: .9rem; }
+.iv-empty { color: #7b8790; font-style: italic; font-weight: 400; }
+
 .app-header {
   padding: 36px 0 20px;
 }
@@ -355,6 +371,8 @@ button.small {
   .workflow .active { display: block; }
   .mode-bar { align-items: stretch; flex-direction: column; }
   .segmented button { flex: 1; }
+  .iv-preview-title { align-items: flex-start; flex-direction: column; }
+  .iv-preview-title small { text-align: left; }
   .field-grid,
   .item-fields {
     grid-template-columns: 1fr;

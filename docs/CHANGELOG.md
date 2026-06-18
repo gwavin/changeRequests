@@ -2,6 +2,7 @@
 
 ## 2026-06-18
 
+- Added a live Excel-style IV Set draft visualisation shared with the downloaded HTML output.
 - Added progressive Guide me and Show all fields modes.
 - Added plain-language requested outcomes while retaining all technical template fields.
 - Added discussion-readiness validation and patient-information confirmation.

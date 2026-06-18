@@ -151,8 +151,19 @@
       var fieldContainer = node.querySelector(".item-fields");
       var summary = node.querySelector(".request-summary");
       var technicalDetails = node.querySelector(".technical-details");
+      var livePreview;
+      if (state.typeId === "ivSet") {
+        livePreview = document.createElement("div");
+        livePreview.className = "iv-live-preview";
+        technicalDetails.parentNode.insertBefore(livePreview, technicalDetails);
+        livePreview.innerHTML = window.MnCmsIvPreview.render(item);
+      }
       summary.value = item.requestSummary || "";
-      summary.addEventListener("input", function () { item.requestSummary = summary.value; refreshPreview(); });
+      summary.addEventListener("input", function () {
+        item.requestSummary = summary.value;
+        if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item);
+        refreshPreview();
+      });
       technicalDetails.open = state.mode === "expert";
 
       fields.forEach(function (field) {
@@ -187,14 +198,17 @@
           control = document.createElement("input");
           control.type = "text";
         }
+        control.dataset.fieldKey = field.key;
         control.value = item[field.key] || "";
         control.placeholder = field.placeholder || "";
         control.addEventListener("input", function () {
           item[field.key] = control.value;
+          if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item);
           refreshPreview();
         });
         control.addEventListener("change", function () {
           item[field.key] = control.value;
+          if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item);
           refreshPreview();
         });
         label.innerHTML = "<span>" + field.label + "</span>";

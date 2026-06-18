@@ -14,6 +14,6 @@ The form supports two views of the same request:
 
 Exports are enabled when the request contains enough information for team discussion. Technical fields may remain **Not specified / discuss**. Suggested filenames follow `<subject> <type> CR - <site code> <DDMMYYYY>`.
 
-The HTML review is the preferred human-readable output. For IV Set and SN Anaesthesia requests, it includes a built-output preview based on the supplied Excel templates.
+The HTML review is the preferred human-readable output. IV Set requests include a live, Excel-style draft visualisation in the form and the downloaded HTML; SN Anaesthesia requests include a built-output preview.
 
 This repo should not contain real patient data, credentials, tokens, or sensitive operational material.
