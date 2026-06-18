@@ -16,7 +16,7 @@ test("renders an Excel-style IV set draft with entered values", () => {
     normalisedRate: "mg/hour"
   });
 
-  assert.match(html, /Draft visualisation—not approved build/);
+  assert.match(html, /Draft request visualisation—not an approved build/);
   assert.match(html, /Labetalol Adult IV Infusion/);
   assert.match(html, /Sodium Chloride 0\.9%/);
   assert.match(html, /200 mg/);
@@ -28,4 +28,15 @@ test("renders uncertainty explicitly and escapes user-entered markup", () => {
   assert.doesNotMatch(html, /<script>/);
   assert.match(html, /&lt;script&gt;/);
   assert.match(html, /Not specified/);
+});
+
+test("renders editable clinical-style Details and Continuous Details tabs", () => {
+  const html = window.MnCmsIvPreview.render({ readyDiluted: "No" }, { editable: true, activeTab: "continuous" });
+  assert.match(html, /data-preview-tab="details"/);
+  assert.match(html, /data-preview-tab="continuous"/);
+  assert.match(html, /data-preview-field="diluentOrderableSynonym"/);
+  assert.match(html, /data-preview-field="weight"/);
+  assert.match(html, /data-preview-field="startDateTime"/);
+  assert.match(html, /aria-selected="true"[^>]*>Continuous Details/);
+  assert.match(window.MnCmsIvPreview.render({ readyDiluted: "Yes" }), /Ready-Diluted/);
 });

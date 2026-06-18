@@ -2,6 +2,8 @@
 
 ## 2026-06-18
 
+- Reworked the IV Set draft into directly editable Details and Continuous Details views based on the supplied clinical-system screenshots.
+- Added a required NICU question and ready-diluted/base-solution guidance, with derived Continuous Details updating from entered values.
 - Added a live Excel-style IV Set draft visualisation shared with the downloaded HTML output.
 - Added progressive Guide me and Show all fields modes.
 - Added plain-language requested outcomes while retaining all technical template fields.

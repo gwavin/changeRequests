@@ -109,6 +109,7 @@
 
   var ivSetFields = [
     heading("IV Set top-level template columns"),
+    field("nicuInfusion", "Is this infusion for NICU?", "select", { options: options.yesNo, helper: "Required. This affects naming, review and the intended clinical context." }),
     field("request", "Request: Add / Remove / Modify", "select", { options: options.action }),
     field("description", "Description", "text", { placeholder: "Example: Labetalol Adult IV Infusion; NICU Naloxone IV Infusion" }),
     field("reasonForRequest", "Reason for Request", "textarea"),
@@ -120,6 +121,7 @@
     field("includeInCarePlan", "IV set to be included in a Care Plan", "select", { options: options.yesNo }),
     field("carePlanName", "(If yes) Care Plan Name", "text"),
     heading("Diluent (=Base Solution)"),
+    field("readyDiluted", "Is the product ready-diluted?", "select", { options: options.yesNo, helper: "Choose Yes when the IV Set comprises the supplied diluent/product only and no separate additive is prepared." }),
     field("diluentOrderableSynonym", "Orderable Synonym", "text"),
     field("bagVolume", "Bag Volume +/- Volume Unit (i.e. Total volume of bag/syringe)", "text"),
     field("routeOfAdministration", "Route of Administration", "select", { options: options.route }),

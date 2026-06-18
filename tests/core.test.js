@@ -46,6 +46,18 @@ test("essential validation identifies missing discussion-ready information", () 
   assert.ok(result.errors.some((error) => error.field === "items"));
 });
 
+test("IV Set validation requires an explicit NICU answer", () => {
+  const data = {
+    typeId: "ivSet", shortSubject: "Labetalol", requestTitle: "Add IV Set",
+    requestingSite: "Example Hospital", siteCode: "EX", requesterName: "Example User",
+    overallReason: "Needed for a standard infusion.", privacyConfirmed: true,
+    items: [{ requestSummary: "Add a labetalol IV Set." }]
+  };
+  assert.ok(core.validate(data).errors.some((error) => error.field === "nicuInfusion"));
+  data.items[0].nicuInfusion = "No";
+  assert.ok(!core.validate(data).errors.some((error) => error.field === "nicuInfusion"));
+});
+
 test("readiness distinguishes required information from optional expert detail", () => {
   const result = core.readiness({
     typeId: "orderCatalog",

@@ -62,6 +62,9 @@
     if (!Array.isArray(data.items) || !data.items.some(itemHasIntent)) {
       errors.push({ field: "items", message: "Add at least one requested change. It is acceptable to say that technical details require discussion." });
     }
+    if (data.typeId === "ivSet" && (!Array.isArray(data.items) || data.items.some(function (item) { return !clean(item.nicuInfusion); }))) {
+      errors.push({ field: "nicuInfusion", message: "Answer whether each IV Set is for NICU." });
+    }
     return { errors: errors };
   }
 

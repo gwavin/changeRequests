@@ -152,16 +152,42 @@
       var summary = node.querySelector(".request-summary");
       var technicalDetails = node.querySelector(".technical-details");
       var livePreview;
+      var activePreviewTab = "details";
+      function renderLivePreview() {
+        if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item, { editable: true, activeTab: activePreviewTab });
+      }
       if (state.typeId === "ivSet") {
         livePreview = document.createElement("div");
         livePreview.className = "iv-live-preview";
         technicalDetails.parentNode.insertBefore(livePreview, technicalDetails);
-        livePreview.innerHTML = window.MnCmsIvPreview.render(item);
+        livePreview.addEventListener("click", function (event) {
+          var tab = event.target.closest("[data-preview-tab]");
+          if (!tab) return;
+          activePreviewTab = tab.dataset.previewTab;
+          renderLivePreview();
+        });
+        livePreview.addEventListener("input", function (event) {
+          var field = event.target.dataset.previewField;
+          if (!field) return;
+          item[field] = event.target.value;
+          var sourceControl = node.querySelector('[data-field-key="' + field + '"]');
+          if (sourceControl) sourceControl.value = event.target.value;
+          var titleValue = livePreview.querySelector("[data-derived-title]");
+          if (titleValue) titleValue.textContent = window.MnCmsIvPreview.derivedTitle(item) || "Not specified";
+          var totalValue = livePreview.querySelector("[data-derived-total-volume]");
+          if (totalValue && field === "bagVolume") totalValue.textContent = item.bagVolume || "Not specified";
+          refreshPreview();
+        });
+        livePreview.addEventListener("change", function (event) {
+          if (!event.target.dataset.previewField) return;
+          renderLivePreview();
+        });
+        renderLivePreview();
       }
       summary.value = item.requestSummary || "";
       summary.addEventListener("input", function () {
         item.requestSummary = summary.value;
-        if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item);
+        renderLivePreview();
         refreshPreview();
       });
       technicalDetails.open = state.mode === "expert";
@@ -203,12 +229,12 @@
         control.placeholder = field.placeholder || "";
         control.addEventListener("input", function () {
           item[field.key] = control.value;
-          if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item);
+          renderLivePreview();
           refreshPreview();
         });
         control.addEventListener("change", function () {
           item[field.key] = control.value;
-          if (livePreview) livePreview.innerHTML = window.MnCmsIvPreview.render(item);
+          renderLivePreview();
           refreshPreview();
         });
         label.innerHTML = "<span>" + field.label + "</span>";
