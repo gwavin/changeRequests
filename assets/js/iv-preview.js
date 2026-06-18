@@ -10,15 +10,40 @@
     return clean ? escapeHtml(clean) : "<span class=\"iv-empty\">Not specified</span>";
   }
 
+  var fieldGuidance = {
+    nicuInfusion: "Required: choose whether this infusion is intended for NICU use.",
+    readyDiluted: "Choose Yes when the IV Set comprises the supplied diluent or product only, without a separately prepared additive.",
+    diluentOrderableSynonym: "Enter the base solution exactly as users should find or recognise it.",
+    additiveOrderableSynonym: "Enter the medication added to the base solution, if any.",
+    bagVolume: "Enter the proposed total bag or syringe volume, including its unit.",
+    rate: "Enter the proposed administration rate and rate unit.",
+    infuseOver: "Enter the proposed infusion duration and time unit.",
+    additiveDose: "Enter the additive amount and dose unit.",
+    normalisedRate: "Enter the normalised dosing rate and unit, if applicable.",
+    routeOfAdministration: "Choose the proposed route of administration.",
+    drugForm: "Choose the proposed medication form.",
+    duration: "Enter how long the order should remain active.",
+    replaceEvery: "Enter the proposed replacement interval.",
+    startDateTime: "Enter a representative proposed start date and time only when it helps explain the request.",
+    weight: "Enter an example weight only when needed to demonstrate the requested display.",
+    weightUnit: "Choose the unit used for the example weight.",
+    specialInstructions: "Enter proposed special instructions that should appear with the infusion.",
+    orderCommentsInfusionInstructions: "Enter the infusion wording users should see. Do not include patient information."
+  };
+
+  function guidance(field, label) {
+    return fieldGuidance[field] || ("Enter the proposed " + String(label || field).toLowerCase() + ". Leave blank if it requires team discussion.");
+  }
+
   function input(item, field, label, editable) {
     if (!editable) return text(item[field]);
-    return "<input class=\"iv-inline-input\" data-preview-field=\"" + field + "\" aria-label=\"" + escapeHtml(label) + "\" value=\"" + escapeHtml(item[field] || "") + "\" placeholder=\"Not specified\">";
+    return "<input class=\"iv-inline-input\" data-preview-field=\"" + field + "\" aria-label=\"" + escapeHtml(label) + "\" title=\"" + escapeHtml(guidance(field, label)) + "\" value=\"" + escapeHtml(item[field] || "") + "\" placeholder=\"Not specified\">";
   }
 
   function select(item, field, label, values, editable) {
     if (!editable) return text(item[field]);
     var current = String(item[field] || "");
-    return "<select class=\"iv-inline-select\" data-preview-field=\"" + field + "\" aria-label=\"" + escapeHtml(label) + "\"><option value=\"\">Not specified</option>" + values.map(function (option) {
+    return "<select class=\"iv-inline-select\" data-preview-field=\"" + field + "\" aria-label=\"" + escapeHtml(label) + "\" title=\"" + escapeHtml(guidance(field, label)) + "\"><option value=\"\">Not specified</option>" + values.map(function (option) {
       return "<option" + (option === current ? " selected" : "") + ">" + escapeHtml(option) + "</option>";
     }).join("") + "</select>";
   }
@@ -50,7 +75,7 @@
       "<label>Replace Every Unit" + input(item, "replaceEveryUnit", "Replace every unit", editable) + "</label>",
       "</div><div>",
       "<label><b>*Route:</b>" + select(item, "routeOfAdministration", "Route", ["intraVENOUS", "subCUTANEOUS", "intraARTERIAL"], editable) + "</label>",
-      "<label class=\"iv-tall-label\">Special Instructions" + (editable ? "<textarea class=\"iv-inline-textarea\" data-preview-field=\"specialInstructions\" aria-label=\"Special instructions\" placeholder=\"Not specified\">" + escapeHtml(item.specialInstructions || "") + "</textarea>" : text(item.specialInstructions)) + "</label>",
+      "<label class=\"iv-tall-label\">Special Instructions" + (editable ? "<textarea class=\"iv-inline-textarea\" data-preview-field=\"specialInstructions\" aria-label=\"Special instructions\" title=\"" + escapeHtml(guidance("specialInstructions", "Special instructions")) + "\" placeholder=\"Not specified\">" + escapeHtml(item.specialInstructions || "") + "</textarea>" : text(item.specialInstructions)) + "</label>",
       "<label><b>*Start Date / Time:</b>" + input(item, "startDateTime", "Start date and time", editable) + "</label>",
       "</div></div></div>"
     ].join("");
@@ -66,7 +91,7 @@
       "<tr><td></td><td colspan=\"2\"><b>Total Bag Volume</b></td><td colspan=\"2\" data-derived-total-volume>" + text(item.bagVolume) + "</td></tr>",
       "</tbody></table></div>",
       "<div class=\"iv-result-strip\"><label>Weight " + input(item, "weight", "Weight", editable) + "</label><label>Weight Unit " + select(item, "weightUnit", "Weight unit", ["kg", "g"], editable) + "</label><label>Weight Type " + input(item, "weightType", "Weight type", editable) + "</label><label>Result dt/tm " + input(item, "resultDateTime", "Result date and time", editable) + "</label></div>",
-      "<label class=\"iv-instruction-label\">Infusion instructions" + (editable ? "<textarea class=\"iv-inline-textarea iv-instructions\" data-preview-field=\"orderCommentsInfusionInstructions\" aria-label=\"Infusion instructions\" placeholder=\"Describe the proposed infusion instructions\">" + escapeHtml(item.orderCommentsInfusionInstructions || "") + "</textarea>" : text(item.orderCommentsInfusionInstructions)) + "</label>",
+      "<label class=\"iv-instruction-label\">Infusion instructions" + (editable ? "<textarea class=\"iv-inline-textarea iv-instructions\" data-preview-field=\"orderCommentsInfusionInstructions\" aria-label=\"Infusion instructions\" title=\"" + escapeHtml(guidance("orderCommentsInfusionInstructions", "Infusion instructions")) + "\" placeholder=\"Describe the proposed infusion instructions\">" + escapeHtml(item.orderCommentsInfusionInstructions || "") + "</textarea>" : text(item.orderCommentsInfusionInstructions)) + "</label>",
       "<p class=\"iv-derived-note\">Base shown as: <strong data-derived-base>" + text(baseName) + "</strong></p></div>"
     ].join("");
   }

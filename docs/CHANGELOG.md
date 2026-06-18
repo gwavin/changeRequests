@@ -2,6 +2,10 @@
 
 ## 2026-06-18
 
+- Replaced free-text requesting sites with approved hospital codes that populate the full site name.
+- Added hover, keyboard-focus and touch guidance to metadata and change-item fields.
+- Added structured numeric entry for unambiguous age, PMA and weight boundaries while preserving flexible clinical expressions.
+- Changed CSV output from one wide row to labelled request and change-item sections for easier human review.
 - Reworked the IV Set draft into directly editable Details and Continuous Details views based on the supplied clinical-system screenshots.
 - Added a required NICU question and ready-diluted/base-solution guidance, with derived Continuous Details updating from entered values.
 - Added a live Excel-style IV Set draft visualisation shared with the downloaded HTML output.

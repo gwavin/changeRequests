@@ -5,7 +5,7 @@ Static MN-CMS change request builder for shared-folder or static-site use.
 Open `index.html` directly in a browser to create a request. The tool keeps drafts in the local browser profile and downloads:
 
 - HTML review document
-- CSV tabular data
+- CSV review report arranged as labelled two-column sections for request details and each change item
 
 The form supports two views of the same request:
 
