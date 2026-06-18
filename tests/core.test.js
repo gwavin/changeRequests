@@ -6,6 +6,26 @@ require("../assets/js/core.js");
 
 const core = global.window.MnCmsCore;
 
+test("resolves approved requesting sites by code", () => {
+  assert.deepEqual(core.siteForCode("TCH"), { code: "TCH", name: "The Coombe Hospital" });
+  assert.deepEqual(core.siteForCode("national"), { code: "NATIONAL", name: "National / All Sites" });
+  assert.equal(core.siteForCode("EX"), null);
+});
+
+test("validates requesting site against the approved mapping", () => {
+  const base = {
+    typeId: "orderCatalog", shortSubject: "Labetalol", requestTitle: "Add labetalol",
+    requestingSite: "National Maternity Hospital", siteCode: "NMH", requesterName: "Example User",
+    overallReason: "Needed for prescribing.", privacyConfirmed: true,
+    items: [{ requestSummary: "Add labetalol." }]
+  };
+  assert.ok(!core.validate(base).errors.some((error) => error.field === "siteCode"));
+  assert.ok(core.validate({ ...base, requestingSite: "Example Hospital", siteCode: "EX" }).errors.some((error) => error.field === "siteCode"));
+  core.sites.forEach((site) => {
+    assert.ok(!core.validate({ ...base, requestingSite: site.name, siteCode: site.code }).errors.some((error) => error.field === "siteCode"));
+  });
+});
+
 test("builds the requested filename from subject, request type, site and date", () => {
   assert.equal(core.fileBase({
     shortSubject: "Labetalol",
@@ -49,7 +69,7 @@ test("essential validation identifies missing discussion-ready information", () 
 test("IV Set validation requires an explicit NICU answer", () => {
   const data = {
     typeId: "ivSet", shortSubject: "Labetalol", requestTitle: "Add IV Set",
-    requestingSite: "Example Hospital", siteCode: "EX", requesterName: "Example User",
+    requestingSite: "National Maternity Hospital", siteCode: "NMH", requesterName: "Example User",
     overallReason: "Needed for a standard infusion.", privacyConfirmed: true,
     items: [{ requestSummary: "Add a labetalol IV Set." }]
   };
@@ -63,7 +83,7 @@ test("readiness distinguishes required information from optional expert detail",
     typeId: "orderCatalog",
     shortSubject: "Labetalol",
     requestTitle: "Add labetalol",
-    requestingSite: "NMH",
+    requestingSite: "National Maternity Hospital",
     siteCode: "NMH",
     requesterName: "Example User",
     overallReason: "Needed for prescribing.",

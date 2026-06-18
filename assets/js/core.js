@@ -9,6 +9,16 @@
     snAnaesthesia: "SN Anaesthesia"
   };
 
+  var sites = [
+    { code: "NMH", name: "National Maternity Hospital" },
+    { code: "ROH", name: "Rotunda Hospital" },
+    { code: "CUMH", name: "Cork University Maternity Hospital" },
+    { code: "TCH", name: "The Coombe Hospital" },
+    { code: "UMHL", name: "University Maternity Hospital Limerick" },
+    { code: "UHK", name: "University Hospital Kerry" },
+    { code: "NATIONAL", name: "National / All Sites" }
+  ];
+
   function clean(value) {
     return String(value || "").trim();
   }
@@ -19,6 +29,11 @@
       .replace(/\s+-\s+-+/g, " - ")
       .replace(/\s+/g, " ")
       .replace(/^[-. ]+|[-. ]+$/g, "");
+  }
+
+  function siteForCode(code) {
+    var normalised = clean(code).toUpperCase();
+    return sites.find(function (site) { return site.code === normalised; }) || null;
   }
 
   function dateForFilename(value) {
@@ -51,13 +66,17 @@
       ["typeId", "Choose a request type."],
       ["shortSubject", "Add a short subject for the filename."],
       ["requestTitle", "Describe the change in a short title."],
-      ["requestingSite", "Name the requesting site or team."],
-      ["siteCode", "Add the site code used in filenames."],
       ["requesterName", "Add the requester name."],
       ["overallReason", "Explain the problem or reason for discussion."]
     ].forEach(function (rule) {
       if (!clean(data[rule[0]])) errors.push({ field: rule[0], message: rule[1] });
     });
+    var selectedSite = siteForCode(data.siteCode);
+    if (!selectedSite) {
+      errors.push({ field: "siteCode", message: "Choose a requesting site from the approved list." });
+    } else if (clean(data.requestingSite) !== selectedSite.name) {
+      errors.push({ field: "siteCode", message: "Re-select the requesting site so its full name can be confirmed." });
+    }
     if (!data.privacyConfirmed) errors.push({ field: "privacyConfirmed", message: "Confirm that no patient-identifiable information is included." });
     if (!Array.isArray(data.items) || !data.items.some(itemHasIntent)) {
       errors.push({ field: "items", message: "Add at least one requested change. It is acceptable to say that technical details require discussion." });
@@ -78,6 +97,8 @@
   }
 
   root.MnCmsCore = {
+    sites: sites.map(function (site) { return { code: site.code, name: site.name }; }),
+    siteForCode: siteForCode,
     fileBase: fileBase,
     validate: validate,
     readiness: readiness
