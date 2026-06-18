@@ -51,8 +51,8 @@
       ["Short subject", data.shortSubject],
       ["Request title", data.requestTitle],
       ["CR type", data.typeLabel],
-      ["Requesting site/team", data.requestingSite],
-      ["Site code", data.siteCode],
+      ["Requesting site code", data.siteCode],
+      ["Requesting site", data.requestingSite],
       ["Requester", data.requesterName],
       ["Requester contact", data.requesterContact],
       ["Urgency", data.urgency],
@@ -150,6 +150,27 @@
     return [headers.join(separator)].concat(rows.map(function (row) {
       return headers.map(function (header) { return escapeDelimited(row[header]); }).join(separator);
     })).join("\r\n");
+  }
+
+  function csvRow(label, value) {
+    return [escapeDelimited(label), escapeDelimited(value)].join(",");
+  }
+
+  function csv(data, fields) {
+    var rows = [csvRow("CHANGE REQUEST DETAILS", ""), csvRow("Field", "Value")];
+    metadataLines(data).forEach(function (pair) {
+      rows.push(csvRow(pair[0], pair[1]));
+    });
+    data.items.forEach(function (item, index) {
+      rows.push("", csvRow("CHANGE ITEM " + (index + 1), ""), csvRow("Field", "Value"));
+      rows.push(csvRow("Requested outcome", item.requestSummary));
+      fields.forEach(function (field) {
+        if (field.key && hasValue(item[field.key])) {
+          rows.push(csvRow(field.label, item[field.key]));
+        }
+      });
+    });
+    return rows.join("\r\n");
   }
 
   function hasValue(value) {
@@ -315,7 +336,7 @@
     txt: txt,
     json: json,
     tsv: function (data, fields) { return delimited(data, fields, "\t"); },
-    csv: function (data, fields) { return delimited(data, fields, ","); },
+    csv: csv,
     html: html,
     rtf: rtf,
     fileBase: fileBase
