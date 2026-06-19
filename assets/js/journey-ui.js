@@ -19,7 +19,9 @@
   }
 
   function create(options) {
-    var currentKey = "request";
+    var currentKey = "siteCode";
+    var typeId = options.typeId;
+    var typeLabel = options.typeLabel;
     var rootEl = options.root;
     var questionEl = rootEl.querySelector("#journeyQuestion");
     var summaryEl = rootEl.querySelector("#journeySummary");
@@ -29,7 +31,7 @@
     var announcementEl = rootEl.querySelector("#journeyAnnouncement");
     var errorEl = rootEl.querySelector("#journeyError");
 
-    function steps() { return root.MnCmsJourney.stepsFor("orderCatalog", options.getData()); }
+    function steps() { return root.MnCmsJourney.stepsFor(typeId, options.getData()); }
     function currentStep() {
       var available = steps();
       return available.find(function (entry) { return entry.key === currentKey; }) || available[0];
@@ -87,28 +89,33 @@
       var data = options.getData();
       var currentItem = item(data);
       var rows = [
-        ["Request", currentItem.request, "request"], ["Medication", currentItem.genericName, "genericName"],
+        ["Request", currentItem.request, "request"], ["Medication", currentItem.genericName || currentItem.orderableSynonym, typeId === "orderSentence" ? "orderableSynonym" : "genericName"],
         ["Reason", currentItem.reasonForRequest, "reasonForRequest"], ["Authoritative reference", currentItem.referenceChecked, "referenceChecked"]
       ];
-      if (currentItem.request === "Add") rows.push(["Strengths", currentItem.strengths, "strengths"]);
+      if (typeId === "orderCatalog" && currentItem.request === "Add") rows.push(["Strengths", currentItem.strengths, "strengths"]);
       if (currentItem.request === "Modify") { rows.push(["Current", currentItem.currentProductDescription, "currentProductDescription"]); rows.push(["Requested", currentItem.requestedProductDescription, "requestedProductDescription"]); }
       if (currentItem.request === "Remove") rows.push(["Replacement / impact", currentItem.replacementImpactDetails || currentItem.replacementImpactState, "replacementImpactState"]);
+      if (typeId === "orderSentence") {
+        rows.push(["Dose", [currentItem.dose, currentItem.doseUnit].filter(clean).join(" "), "dose"]);
+        rows.push(["Route", currentItem.routeOfAdministration, "routeOfAdministration"]);
+        rows.push(["Frequency", currentItem.frequency, "frequency"]);
+      }
       rows.unshift(["Medicines-team liaison", data.requesterName, "requesterName"]); rows.unshift(["Site", data.requestingSite || data.siteCode, "siteCode"]);
       rows.push(["Clinical correctness", currentItem.clinicalCorrectnessConfirmed, "clinicalCorrectnessConfirmed"]);
-      summaryEl.innerHTML = "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>Order Catalog</h3></div><dl>" + rows.map(function (row) { return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(display(row[1])) + "</dd>" + (display(row[1]) !== "Not answered" ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>";
+      summaryEl.innerHTML = "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(display(row[1])) + "</dd>" + (display(row[1]) !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>";
       summaryEl.querySelectorAll("[data-edit-step]").forEach(function (button) { button.addEventListener("click", function () { currentKey = button.dataset.editStep; render(); }); });
     }
     function renderReview(data) {
-      var meta = root.MnCmsJourney.derivedMetadata("orderCatalog", data);
-      var rows = root.MnCmsJourney.orderCatalogRows(data);
+      var meta = root.MnCmsJourney.derivedMetadata(typeId, data);
+      var rows = root.MnCmsJourney.reviewRows(typeId, data);
+      var columns = root.MnCmsJourney.reviewColumns(typeId);
       var currentItem = item(data);
       var strengthGuidance = currentItem.request === "Add" && display(currentItem.strengths) !== "Not answered" ? "<p class=\"journey-warning\"><strong>Order Sentence likely required:</strong> Prescribing strengths are normally handled in Order Sentences, particularly for multi-ingredient preparations. Please submit a separate Order Sentence request where applicable.</p>" : "";
-      var branchDetails = currentItem.request === "Modify" ? "<div class=\"review-branch-details\"><div><span>Current</span><strong>" + escapeHtml(display(currentItem.currentProductDescription)) + "</strong></div><div><span>Requested</span><strong>" + escapeHtml(display(currentItem.requestedProductDescription)) + "</strong></div></div>" : (currentItem.request === "Remove" ? "<div class=\"review-branch-details\"><div><span>Replacement / workflow impact</span><strong>" + escapeHtml(display(currentItem.replacementImpactDetails || currentItem.replacementImpactState)) + "</strong></div><div><span>Removal request</span><strong>Explicitly confirmed</strong></div></div>" : "");
-      questionEl.innerHTML = "<div class=\"journey-review\"><h2 id=\"journeyQuestionHeading\">Review your assembled request</h2><p class=\"journey-status\">For discussion — not approved</p><div class=\"review-derived\"><label>Short subject<input data-review-meta=\"shortSubject\" value=\"" + escapeHtml(meta.shortSubject) + "\"></label><label>Request title<input data-review-meta=\"requestTitle\" value=\"" + escapeHtml(meta.requestTitle) + "\"></label></div>" + branchDetails + "<div class=\"review-table-wrap\"><table><thead><tr><th>Request</th><th>Reason</th><th>Authoritative reference</th><th>Generic name</th><th>Brand (if relevant)</th><th>Strength</th></tr></thead><tbody>" + rows.map(function (row) { return "<tr><td>" + escapeHtml(row.request) + "</td><td>" + escapeHtml(row.reasonForRequest) + "</td><td>" + escapeHtml(row.reference) + "</td><td>" + escapeHtml(row.genericName) + "</td><td>" + escapeHtml(row.brandName) + "</td><td>" + escapeHtml(row.strength) + "</td></tr>"; }).join("") + "</tbody></table></div>" + strengthGuidance + "<div class=\"review-actions\"><button type=\"button\" data-download=\"html\">Download HTML review</button><button type=\"button\" data-download=\"csv\">Download CSV</button><button type=\"button\" class=\"secondary\" data-add-item>Add another Order Catalog item</button></div><div class=\"next-cr\"><h3>What would you like to do next?</h3><p>Your request remains a discussion draft. You can start another type if needed.</p><div>" + options.nextTypes.map(function (type) { return "<button type=\"button\" class=\"secondary\" data-next-type=\"" + type.id + "\">" + escapeHtml(type.label) + "</button>"; }).join("") + "</div></div></div>";
+      var branchDetails = currentItem.request === "Modify" ? "<div class=\"review-branch-details\"><div><span>Current</span><strong>" + escapeHtml(display(currentItem.currentProductDescription || currentItem.currentValue)) + "</strong></div><div><span>Requested</span><strong>" + escapeHtml(display(currentItem.requestedProductDescription || currentItem.requestedValue)) + "</strong></div></div>" : (currentItem.request === "Remove" ? "<div class=\"review-branch-details\"><div><span>Removal request</span><strong>Explicitly confirmed</strong></div></div>" : "");
+      questionEl.innerHTML = "<div class=\"journey-review\"><h2 id=\"journeyQuestionHeading\">Review your assembled request</h2><p class=\"journey-status\">For discussion - not approved</p><div class=\"review-derived\"><label>Short subject<input data-review-meta=\"shortSubject\" value=\"" + escapeHtml(meta.shortSubject) + "\"></label><label>Request title<input data-review-meta=\"requestTitle\" value=\"" + escapeHtml(meta.requestTitle) + "\"></label></div>" + branchDetails + "<div class=\"review-table-wrap\"><table><thead><tr>" + columns.map(function (column) { return "<th>" + escapeHtml(column[1]) + "</th>"; }).join("") + "</tr></thead><tbody>" + rows.map(function (row) { return "<tr>" + columns.map(function (column) { return "<td>" + escapeHtml(row[column[0]]) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>" + strengthGuidance + "<div class=\"review-actions\"><button type=\"button\" data-download=\"html\">Download HTML review</button><button type=\"button\" data-download=\"csv\">Download CSV</button></div><div class=\"next-cr\"><h3>What would you like to do next?</h3><p>Your request remains a discussion draft. You can start another type if needed.</p><div>" + options.nextTypes.map(function (type) { return "<button type=\"button\" class=\"secondary\" data-next-type=\"" + type.id + "\">" + escapeHtml(type.label) + "</button>"; }).join("") + "</div></div></div>";
       questionEl.querySelectorAll("[data-review-meta]").forEach(function (control) { control.addEventListener("input", function () { set(control.dataset.reviewMeta, control.value); }); });
       questionEl.querySelector('[data-download="html"]').addEventListener("click", options.onDownloadHtml);
       questionEl.querySelector('[data-download="csv"]').addEventListener("click", options.onDownloadCsv);
-      questionEl.querySelector("[data-add-item]").addEventListener("click", options.onAddItem);
       questionEl.querySelectorAll("[data-next-type]").forEach(function (button) { button.addEventListener("click", function () { options.onNextType(button.dataset.nextType); }); });
     }
     function render() {
@@ -123,19 +130,18 @@
       errorEl.textContent = "";
       if (entry.type === "review") renderReview(data);
       else {
-        questionEl.innerHTML = "<p class=\"section-label\">Order Catalog</p><h2 id=\"journeyQuestionHeading\" tabindex=\"-1\">" + escapeHtml(entry.title) + "</h2><p class=\"journey-description\">" + escapeHtml(entry.description || "") + "</p><div class=\"journey-control\">" + fieldMarkup(entry, data) + "</div>";
+        questionEl.innerHTML = "<p class=\"section-label\">" + escapeHtml(typeLabel) + "</p><h2 id=\"journeyQuestionHeading\" tabindex=\"-1\">" + escapeHtml(entry.title) + "</h2><p class=\"journey-description\">" + escapeHtml(entry.description || "") + "</p><div class=\"journey-control\">" + fieldMarkup(entry, data) + "</div>";
         bindAnswer(entry);
       }
-      actionsEl.innerHTML = "<button type=\"button\" class=\"secondary\" data-back" + (index === 0 ? " disabled" : "") + ">Back</button><div><button type=\"button\" class=\"secondary\" data-expert>I know the technical details — show the full form</button>" + (entry.skipValue ? "<button type=\"button\" class=\"secondary\" data-skip>Skip for now</button>" : "") + (entry.type !== "review" ? "<button type=\"button\" data-next>Continue</button>" : "") + "</div>";
+      actionsEl.innerHTML = "<button type=\"button\" class=\"secondary\" data-back" + (index === 0 ? " disabled" : "") + ">Back</button><div>" + (entry.skipValue ? "<button type=\"button\" class=\"secondary\" data-skip>Skip for now</button>" : "") + (entry.type !== "review" ? "<button type=\"button\" data-next>Continue</button>" : "") + "</div>";
       actionsEl.querySelector("[data-back]").addEventListener("click", function () { goRelative(-1); });
-      actionsEl.querySelector("[data-expert]").addEventListener("click", options.onShowExpert);
       var skip = actionsEl.querySelector("[data-skip]"); if (skip) skip.addEventListener("click", function () { set(entry.key, entry.skipValue); goRelative(1); });
       var next = actionsEl.querySelector("[data-next]"); if (next) next.addEventListener("click", function () { if (!root.MnCmsJourney.answerComplete(entry, options.getData())) { errorEl.textContent = "Please answer this question before continuing."; errorEl.focus(); return; } goRelative(1); });
       updateContinue(); renderSummary();
       announcementEl.textContent = stepTextEl.textContent + ": " + entry.title;
       var heading = questionEl.querySelector("#journeyQuestionHeading"); if (heading) heading.focus();
     }
-    return { start: function () { var incomplete = root.MnCmsJourney.nextIncompleteStep("orderCatalog", options.getData()); currentKey = incomplete ? incomplete.key : "request"; render(); }, refresh: render, goTo: function (key) { currentKey = key; render(); }, destroy: function () { rootEl.innerHTML = ""; } };
+    return { start: function () { var incomplete = root.MnCmsJourney.nextIncompleteStep(typeId, options.getData()); currentKey = incomplete ? incomplete.key : "siteCode"; render(); }, refresh: render, goTo: function (key) { currentKey = key; render(); }, destroy: function () { rootEl.innerHTML = ""; } };
   }
   root.MnCmsJourneyUi = { create: create };
 })(window);

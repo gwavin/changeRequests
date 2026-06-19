@@ -79,6 +79,19 @@
     if (action === "Remove" && item.removalConfirmed !== true && item.removalConfirmed !== "Yes") errors.push({ field: "removalConfirmed", message: "Confirm that this request is to remove the identified Order Catalog item." });
   }
 
+  function validateOrderSentence(data, errors) {
+    var item = (data.items && data.items[0]) || {};
+    var action = clean(item.request);
+    if (["Add", "Modify", "Remove"].indexOf(action) < 0) errors.push({ field: "request", message: "Choose whether to add, modify, or remove an Order Sentence." });
+    if (!clean(item.orderableSynonym)) errors.push({ field: "orderableSynonym", message: "Identify the medication or orderable for this sentence." });
+    if (!clean(item.reasonForRequest)) errors.push({ field: "reasonForRequest", message: "Explain why the Order Sentence change is needed." });
+    if (!clean(item.referenceChecked)) errors.push({ field: "referenceChecked", message: "Identify the authoritative clinical reference." });
+    if (item.clinicalCorrectnessConfirmed !== true && item.clinicalCorrectnessConfirmed !== "Yes") errors.push({ field: "clinicalCorrectnessConfirmed", message: "The medicines-team liaison must confirm clinical correctness." });
+    if (action === "Modify" && !clean(item.currentValue)) errors.push({ field: "currentValue", message: "Describe the current Order Sentence." });
+    if (action === "Modify" && !clean(item.requestedValue)) errors.push({ field: "requestedValue", message: "Describe the requested Order Sentence." });
+    if (action === "Remove" && item.removalConfirmed !== true && item.removalConfirmed !== "Yes") errors.push({ field: "removalConfirmed", message: "Confirm the requested Order Sentence removal." });
+  }
+
   function validate(data) {
     var errors = [];
     [
@@ -104,6 +117,7 @@
       errors.push({ field: "nicuInfusion", message: "Answer whether each IV Set is for NICU." });
     }
     if (data.typeId === "orderCatalog") validateOrderCatalog(data, errors);
+    if (data.typeId === "orderSentence") validateOrderSentence(data, errors);
     return { errors: errors };
   }
 

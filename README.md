@@ -7,12 +7,11 @@ Open `index.html` directly in a browser to create a request. The tool keeps draf
 - HTML review document
 - CSV review report arranged as labelled two-column sections for request details and each change item
 
-The form supports two views of the same request:
+The builder is moving to guided-only entry so users answer one clear question at a time. Order Catalog and Order Sentence now use this journey. IV Set, Care Plan, and SN Anaesthesia retain their existing forms temporarily while their dedicated guided journeys are implemented sequentially.
 
-- **Guide me** starts with plain-language intent and keeps technical template fields optional and collapsed.
-- **Show all fields** opens the full build detail for experienced requesters.
+Order Catalog requests open as a one-question-at-a-time journey. Choosing Add, Modify, or Remove reveals only the relevant questions, while a growing summary shows the request being assembled. Add requests support multiple strengths; Modify requests distinguish the current and requested state; Remove requests require an explicit removal confirmation.
 
-Order Catalog requests now open as a one-question-at-a-time journey. Choosing Add, Modify, or Remove reveals only the relevant questions, while a growing summary shows the request being assembled. Users can switch to the full form without losing entered information. Add requests support multiple strengths; Modify requests distinguish the current and requested state; Remove requests require an explicit removal confirmation.
+Order Sentence requests use the same guided-only approach. They collect site governance, clinical intent and reference first, then reveal prescribing details such as dose, route, frequency, PRN indication, duration, population restrictions, and current/requested wording only where relevant.
 
 Only the designated medicines-team liaison for a site should submit a request. Order Catalog requests require a specific authoritative reference and the liaison's confirmation that the medication details have been checked for clinical correctness. Generic prescribing is preferred; relevant brand details are accepted. Strength information is useful, especially for multi-ingredient products, but a separate Order Sentence request will probably be needed because prescribing strengths are normally handled there.
 

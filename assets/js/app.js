@@ -10,6 +10,7 @@
   var metadataIds = ["shortSubject", "requestTitle", "requestingSite", "siteCode", "requesterName", "requesterContact", "urgency", "overallReason"];
   var elements = {};
   var journeyController = null;
+  var journeyTypeId = "";
   var lastDerivedShortSubject = "";
   var lastDerivedRequestTitle = "";
   var lastDerivedOverallReason = "";
@@ -196,8 +197,8 @@
       renderGuidance(type);
       renderItems();
       refreshPreview();
-      if (type.id === "orderCatalog") initJourney();
-      setMode(state.mode);
+      if (["orderCatalog", "orderSentence"].indexOf(type.id) >= 0) initJourney(type);
+      setMode("guided");
     }
   }
 
@@ -211,11 +212,11 @@
       if (!state.items.length) addItem(false);
       state.items[0][key] = value;
       if (key === "strengths") state.items[0].strength = (value || [])[0] || "";
-      if (key === "genericName" || key === "request") {
+      if (key === "genericName" || key === "orderableSynonym" || key === "request") {
         var sourceForDerivation = buildRequestData();
         sourceForDerivation.shortSubject = "";
         sourceForDerivation.requestTitle = "";
-        var derived = window.MnCmsJourney.derivedMetadata("orderCatalog", sourceForDerivation);
+        var derived = window.MnCmsJourney.derivedMetadata(state.typeId, sourceForDerivation);
         var currentSubject = byId("shortSubject").value;
         var currentTitle = byId("requestTitle").value;
         if (!currentSubject || currentSubject === lastDerivedShortSubject || currentSubject === "Order Catalog item") byId("shortSubject").value = derived.shortSubject;
@@ -232,20 +233,25 @@
     }
   }
 
-  function initJourney() {
+  function initJourney(type) {
+    if (journeyController && journeyTypeId !== type.id) {
+      journeyController.destroy();
+      journeyController = null;
+    }
     if (!journeyController) {
+      journeyTypeId = type.id;
       journeyController = window.MnCmsJourneyUi.create({
         root: elements.journeyShell,
+        typeId: type.id,
+        typeLabel: type.label,
         getData: buildRequestData,
         setAnswer: setJourneyAnswer,
         onChange: function () { refreshPreview(); window.MnCmsStorage.saveDraft(buildRequestData()); },
-        onShowExpert: function () { setMode("expert"); },
         onDownloadHtml: function () { byId("downloadHtmlButton").click(); },
         onDownloadCsv: function () { byId("downloadCsvButton").click(); },
-        onAddItem: function () { addItem(); setMode("expert"); },
         onNextType: function (typeId) { selectType(typeId); },
         siteOptions: window.MnCmsCore.sites,
-        nextTypes: window.MnCmsSchemas.requestTypes.filter(function (type) { return type.id !== "orderCatalog"; })
+        nextTypes: window.MnCmsSchemas.requestTypes.filter(function (candidate) { return candidate.id !== type.id; })
       });
       journeyController.start();
     } else {
@@ -394,14 +400,8 @@
   }
 
   function setMode(mode) {
-    state.mode = mode;
-    var guided = mode === "guided";
-    byId("guidedModeButton").classList.toggle("active", guided);
-    byId("expertModeButton").classList.toggle("active", !guided);
-    byId("guidedModeButton").setAttribute("aria-pressed", String(guided));
-    byId("expertModeButton").setAttribute("aria-pressed", String(!guided));
-    document.querySelectorAll(".technical-details").forEach(function (detail) { detail.open = !guided; });
-    var journeyActive = state.typeId === "orderCatalog" && guided;
+    state.mode = "guided";
+    var journeyActive = ["orderCatalog", "orderSentence"].indexOf(state.typeId) >= 0;
     elements.journeyShell.classList.toggle("hidden", !journeyActive);
     elements.requestForm.querySelectorAll(":scope > .form-section").forEach(function (section) {
       section.classList.toggle("journey-suppressed", journeyActive);
@@ -482,8 +482,6 @@
   }
 
   function bindActions() {
-    byId("guidedModeButton").addEventListener("click", function () { setMode("guided"); });
-    byId("expertModeButton").addEventListener("click", function () { setMode("expert"); });
     byId("changeTypeButton").addEventListener("click", function () {
       elements.typeChoice.classList.remove("hidden");
       elements.typeChoice.scrollIntoView({ behavior: "smooth", block: "start" });

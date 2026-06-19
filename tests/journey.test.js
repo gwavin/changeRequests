@@ -63,3 +63,25 @@ test("keeps the requested outcome synchronized until the user edits it", () => {
   assert.equal(journey.synchronizedAutomaticText("n", "n", "needed for practice"), "needed for practice");
   assert.equal(journey.synchronizedAutomaticText("Custom outcome", "needed for practice", "updated reason"), "Custom outcome");
 });
+
+test("Order Sentence uses a site-first guided sequence", () => {
+  const sequence = keys(journey.stepsFor("orderSentence", data("Add")));
+  assert.deepEqual(sequence.slice(0, 3), ["siteCode", "requesterName", "request"]);
+  assert.ok(sequence.includes("orderableSynonym"));
+  assert.ok(sequence.includes("clinicalCorrectnessConfirmed"));
+  assert.ok(!sequence.includes("currentValue"));
+});
+
+test("Order Sentence reveals branch and PRN details only when relevant", () => {
+  const modify = keys(journey.stepsFor("orderSentence", data("Modify")));
+  assert.ok(modify.includes("currentValue") && modify.includes("requestedValue"));
+  assert.ok(keys(journey.stepsFor("orderSentence", data("Remove"))).includes("removalConfirmed"));
+  assert.ok(!keys(journey.stepsFor("orderSentence", data("Add", { prn: "N" }))).includes("prnReason"));
+  assert.ok(keys(journey.stepsFor("orderSentence", data("Add", { prn: "Y" }))).includes("prnReason"));
+});
+
+test("derives Order Sentence metadata", () => {
+  assert.deepEqual(journey.derivedMetadata("orderSentence", data("Add", { orderableSynonym: "Labetalol", dose: "100", doseUnit: "mg" })), {
+    shortSubject: "Labetalol", requestTitle: "Add Labetalol Order Sentence"
+  });
+});

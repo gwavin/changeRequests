@@ -76,9 +76,11 @@
 
   var orderSentenceFields = [
     heading("Order Sentence template columns"),
-    field("request", "Request: Add / Modify / Remove", "select", { options: ["Add", "Modify From", "Modify To", "Remove"] }),
+    field("request", "Request: Add / Modify / Remove", "select", { options: ["Add", "Modify", "Remove"] }),
     field("reasonForRequest", "Reason for Request", "textarea"),
     field("referenceChecked", "Reference checked", "textarea"),
+    field("currentValue", "Current Order Sentence", "textarea"),
+    field("requestedValue", "Requested Order Sentence", "textarea"),
     field("orderableSynonym", "Orderable Synonym", "text"),
     field("facilities", "Facilities: all vs local", "select", { options: options.facilities }),
     field("sentenceType", "Sentence type: administration = IP / prescription = OP", "select", { options: options.orderSentenceType }),
@@ -109,6 +111,7 @@
     field("giveFirstDoseNow", "Give First Dose Now: Y / N / blank", "select", { options: options.yesNoBlank }),
     field("duration", "Duration", "text"),
     field("orderComments", "Order Comments", "textarea"),
+    field("clinicalCorrectnessConfirmed", "Clinical correctness confirmed by site liaison", "select", { options: ["Yes", "No"] }),
     field("validationNotes", "Validation notes", "textarea")
   ];
 

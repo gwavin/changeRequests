@@ -2,6 +2,8 @@
 
 ## 2026-06-19
 
+- Removed the guidance-mode choice and expert escape from completed journeys so users answer one question at a time.
+- Added a guided-only Order Sentence journey with Add, Modify, and Remove branches, conditional PRN details, clinical confirmation, and assembled review.
 - Added a one-question-at-a-time Order Catalog journey with a growing request summary.
 - Moved site and designated medicines-team liaison identification to the start of the journey and removed the work-contact question.
 - Merged reference collection into one required authoritative-reference answer and added liaison confirmation of clinical correctness.

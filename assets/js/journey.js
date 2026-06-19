@@ -42,9 +42,36 @@
     step("review", "Review your assembled request", "review", { description: "Check every answer, edit anything that is unclear, then prepare the discussion files." })
   ];
 
+  var orderSentenceSteps = [
+    step("siteCode", "Which site is requesting this change?", "site", { description: "Choose the site represented by its designated medicines-team liaison." }),
+    step("requesterName", "Who is the medicines-team liaison submitting this request?", "text", { placeholder: "Liaison name", description: "Only the designated medicines-team liaison for the selected site may submit a change request." }),
+    step("request", "What do you need to do to this Order Sentence?", "choice", { options: actionOptions, description: "Choose Add, Modify, or Remove. Later questions adapt to this answer." }),
+    step("orderableSynonym", "Which medication or orderable is this sentence for?", "text", { placeholder: "Example: Labetalol", description: "Use the generic medication or orderable name." }),
+    step("currentValue", "What does the current Order Sentence say?", "textarea", { when: isModify, placeholder: "Copy or describe the current sentence." }),
+    step("requestedValue", "What should the Order Sentence say instead?", "textarea", { when: isModify, placeholder: "Describe the requested replacement sentence." }),
+    step("reasonForRequest", "Why is this Order Sentence change needed?", "textarea", { placeholder: "Explain the clinical need or current problem." }),
+    step("referenceChecked", "What authoritative reference did you use to confirm this request is clinically correct?", "textarea", { placeholder: "Example: HPRA SPC section; BNF monograph; dated local guideline" }),
+    step("sentenceType", "Where will this sentence be used?", "choice", { options: ["Administration (inpatient)", "Prescription (outpatient)", "Both", "Not sure"], description: "Choose the intended prescribing context." }),
+    step("facilities", "Should it apply locally or across all sites?", "choice", { options: ["Local", "All", "Not sure"] }),
+    step("dose", "What dose or strength should the sentence contain?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: 100" }),
+    step("doseUnit", "What is the dose unit?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: mg or micrograms/kg" }),
+    step("routeOfAdministration", "Which route should be used?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: oral or intravenous" }),
+    step("drugForm", "Which drug form is needed?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: tablet or solution for injection" }),
+    step("frequency", "What frequency is needed?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: twice daily" }),
+    step("prn", "Is this a PRN (when required) sentence?", "choice", { options: ["Y", "N", "Not sure"] }),
+    step("prnReason", "What is the PRN indication?", "text", { when: function (data) { return clean(firstItem(data).prn) === "Y"; }, placeholder: "Example: for nausea" }),
+    step("duration", "Is a duration needed?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: 5 days" }),
+    step("specialInstructions", "Are special instructions needed?", "textarea", { required: false, skipValue: SKIPPED, placeholder: "Add essential administration or prescribing instructions." }),
+    step("ageRangeCriteria", "Are there age, postmenstrual-age, or weight restrictions?", "textarea", { required: false, skipValue: SKIPPED, placeholder: "Describe the applicable population and boundaries, or skip if none." }),
+    step("clinicalCorrectnessConfirmed", "Confirm the clinical correctness of this request", "confirm", { confirmText: "I confirm that I have checked the clinical correctness of this Order Sentence request against the authoritative reference stated above." }),
+    step("privacyConfirmed", "Does this request contain no patient-identifiable information?", "confirm", { description: "Required. Change requests must never contain patient-identifiable information." }),
+    step("removalConfirmed", "Confirm the requested removal", "confirm", { when: isRemove, confirmText: "I understand this request is to remove the identified Order Sentence." }),
+    step("review", "Review your assembled Order Sentence request", "review")
+  ];
+
   function stepsFor(typeId, data) {
-    if (typeId !== "orderCatalog") return [];
-    return orderCatalogSteps.filter(function (entry) { return !entry.when || entry.when(data || {}); });
+    var definitions = { orderCatalog: orderCatalogSteps, orderSentence: orderSentenceSteps };
+    return (definitions[typeId] || []).filter(function (entry) { return !entry.when || entry.when(data || {}); });
   }
   function answerComplete(entry, data) {
     if (entry.key === "review") return true;
@@ -58,8 +85,12 @@
     return steps.find(function (entry) { return !answerComplete(entry, data); }) || steps[steps.length - 1] || null;
   }
   function derivedMetadata(typeId, data) {
-    if (typeId !== "orderCatalog") return {};
     var item = firstItem(data || {});
+    if (typeId === "orderSentence") {
+      var orderable = clean(item.orderableSynonym || "Order Sentence");
+      return { shortSubject: clean(data.shortSubject) || orderable, requestTitle: clean(data.requestTitle) || (clean(item.request || "Change") + " " + orderable + " Order Sentence") };
+    }
+    if (typeId !== "orderCatalog") return {};
     var name = clean(item.genericName || item.currentProductDescription || "Order Catalog item");
     var verb = clean(item.request || "Change");
     return {
@@ -85,10 +116,24 @@
       };
     });
   }
+  function orderSentenceRows(data) {
+    var item = firstItem(data || {});
+    return [{
+      request: clean(item.request), medication: clean(item.orderableSynonym),
+      dose: [clean(item.dose), clean(item.doseUnit)].filter(Boolean).join(" "),
+      route: clean(item.routeOfAdministration), frequency: clean(item.frequency),
+      prn: clean(item.prn) === "Y" ? ("Yes" + (clean(item.prnReason) ? " - " + clean(item.prnReason) : "")) : clean(item.prn),
+      duration: clean(item.duration), reference: clean(item.referenceChecked)
+    }];
+  }
+  function reviewColumns(typeId) {
+    if (typeId === "orderSentence") return [["request", "Request"], ["medication", "Medication / orderable"], ["dose", "Dose"], ["route", "Route"], ["frequency", "Frequency"], ["prn", "PRN"], ["duration", "Duration"], ["reference", "Authoritative reference"]];
+    return [["request", "Request"], ["reasonForRequest", "Reason"], ["reference", "Authoritative reference"], ["genericName", "Generic name"], ["brandName", "Brand (if relevant)"], ["strength", "Strength"]];
+  }
 
   root.MnCmsJourney = {
     SKIPPED: SKIPPED,
-    definitions: { orderCatalog: orderCatalogSteps },
+    definitions: { orderCatalog: orderCatalogSteps, orderSentence: orderSentenceSteps },
     stepsFor: stepsFor,
     stepByKey: function (typeId, data, key) { return stepsFor(typeId, data).find(function (entry) { return entry.key === key; }) || null; },
     nextIncompleteStep: nextIncompleteStep,
@@ -97,5 +142,8 @@
     synchronizedAutomaticText: synchronizedAutomaticText,
     synchronizedOverallReason: synchronizedAutomaticText,
     orderCatalogRows: orderCatalogRows
+    ,orderSentenceRows: orderSentenceRows
+    ,reviewRows: function (typeId, data) { return typeId === "orderSentence" ? orderSentenceRows(data) : orderCatalogRows(data); }
+    ,reviewColumns: reviewColumns
   };
 })(typeof window !== "undefined" ? window : globalThis);

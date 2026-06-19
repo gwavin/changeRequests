@@ -46,7 +46,7 @@ test("sanitises unsafe filename characters and redundant CR wording", () => {
 
 test("essential validation allows technical uncertainty but requires intent and governance", () => {
   const result = core.validate({
-    typeId: "orderSentence",
+    typeId: "carePlan",
     shortSubject: "Labetalol",
     requestTitle: "Add an order sentence for labetalol",
     requestingSite: "National Maternity Hospital",
@@ -80,7 +80,7 @@ test("IV Set validation requires an explicit NICU answer", () => {
 
 test("readiness distinguishes required information from optional expert detail", () => {
   const result = core.readiness({
-    typeId: "orderSentence",
+    typeId: "carePlan",
     shortSubject: "Labetalol",
     requestTitle: "Add labetalol",
     requestingSite: "National Maternity Hospital",
@@ -112,4 +112,13 @@ test("Order Catalog requires a specific reference and liaison clinical confirmat
   assert.ok(errors({ referenceState: "BNF" }).some((error) => error.field === "referenceChecked"));
   assert.ok(errors({ referenceChecked: "BNF monograph: Labetalol" }).some((error) => error.field === "clinicalCorrectnessConfirmed"));
   assert.ok(!errors({ referenceChecked: "BNF monograph: Labetalol", clinicalCorrectnessConfirmed: true }).some((error) => ["referenceChecked", "clinicalCorrectnessConfirmed"].includes(error.field)));
+});
+
+test("Order Sentence requires clinical intent, reference and liaison confirmation", () => {
+  const base = { typeId: "orderSentence", shortSubject: "Labetalol", requestTitle: "Add labetalol sentence", requestingSite: "National Maternity Hospital", siteCode: "NMH", requesterName: "Example Liaison", overallReason: "Needed", privacyConfirmed: true };
+  const errors = (item) => core.validate({ ...base, items: [{ requestSummary: "Add sentence", ...item }] }).errors;
+  assert.ok(errors({ request: "Add" }).some((error) => error.field === "orderableSynonym"));
+  const complete = { request: "Add", orderableSynonym: "Labetalol", reasonForRequest: "Needed", referenceChecked: "BNF: Labetalol", clinicalCorrectnessConfirmed: true };
+  assert.ok(!errors(complete).some((error) => ["orderableSynonym", "referenceChecked", "clinicalCorrectnessConfirmed"].includes(error.field)));
+  assert.ok(errors({ ...complete, clinicalCorrectnessConfirmed: false }).some((error) => error.field === "clinicalCorrectnessConfirmed"));
 });
