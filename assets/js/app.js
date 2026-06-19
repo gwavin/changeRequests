@@ -12,6 +12,7 @@
   var journeyController = null;
   var lastDerivedShortSubject = "";
   var lastDerivedRequestTitle = "";
+  var lastDerivedOverallReason = "";
   var metadataGuidance = {
     shortSubject: "Enter only the medicine, order or feature name. This becomes the first part of the filename; do not add CR, site or date.",
     requestTitle: "Summarise the requested change in one sentence so reviewers can identify its purpose.",
@@ -223,7 +224,8 @@
       }
       if (key === "reasonForRequest") {
         if (!state.items[0].requestSummary) state.items[0].requestSummary = value;
-        if (!byId("overallReason").value) byId("overallReason").value = value;
+        byId("overallReason").value = window.MnCmsJourney.synchronizedOverallReason(byId("overallReason").value, lastDerivedOverallReason, value);
+        lastDerivedOverallReason = value;
       }
     }
   }
@@ -528,6 +530,7 @@
     }
     state.typeId = draft.typeId;
     state.items = draft.items && draft.items.length ? draft.items : [];
+    lastDerivedOverallReason = state.items[0] && state.items[0].reasonForRequest === draft.overallReason ? draft.overallReason : "";
     if (!state.items.length) {
       addItem(false);
     }

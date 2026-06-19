@@ -51,3 +51,9 @@ test("creates one formal row per requested strength", () => {
   assert.deepEqual(rows.map((row) => row.strength), ["100 mg", "200 mg"]);
   assert.ok(rows.every((row) => row.genericName === "Labetalol" && row.request === "Add"));
 });
+
+test("keeps the overall reason synchronized until the user edits it", () => {
+  assert.equal(journey.synchronizedOverallReason("", "", "p"), "p");
+  assert.equal(journey.synchronizedOverallReason("p", "p", "practice"), "practice");
+  assert.equal(journey.synchronizedOverallReason("Custom clinical explanation", "practice", "practice update"), "Custom clinical explanation");
+});
