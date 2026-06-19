@@ -57,3 +57,9 @@ test("keeps the overall reason synchronized until the user edits it", () => {
   assert.equal(journey.synchronizedOverallReason("p", "p", "practice"), "practice");
   assert.equal(journey.synchronizedOverallReason("Custom clinical explanation", "practice", "practice update"), "Custom clinical explanation");
 });
+
+test("keeps the requested outcome synchronized until the user edits it", () => {
+  assert.equal(journey.synchronizedAutomaticText("", "", "n"), "n");
+  assert.equal(journey.synchronizedAutomaticText("n", "n", "needed for practice"), "needed for practice");
+  assert.equal(journey.synchronizedAutomaticText("Custom outcome", "needed for practice", "updated reason"), "Custom outcome");
+});

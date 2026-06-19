@@ -2,7 +2,17 @@
   "use strict";
 
   function valueOrBlank(value) {
+    if (value === "__SKIPPED__") return "";
     return value == null ? "" : String(value);
+  }
+
+  function cleanExportData(value) {
+    if (value === "__SKIPPED__") return "";
+    if (Array.isArray(value)) return value.map(cleanExportData);
+    if (value && typeof value === "object") {
+      return Object.keys(value).reduce(function (result, key) { result[key] = cleanExportData(value[key]); return result; }, {});
+    }
+    return value;
   }
 
   function escapeMarkdown(value) {
@@ -46,7 +56,7 @@
 
   function metadataLines(data) {
     return [
-      ["Discussion status", "For discussion — not approved"],
+      ["Discussion status", "For discussion - not approved"],
       ["Suggested filename", fileBase(data)],
       ["Short subject", data.shortSubject],
       ["Request title", data.requestTitle],
@@ -119,7 +129,7 @@
   }
 
   function json(data) {
-    return JSON.stringify(data, null, 2);
+    return JSON.stringify(cleanExportData(data), null, 2);
   }
 
   function tableRows(data, fields) {
@@ -168,7 +178,7 @@
         }
       });
     });
-    return rows.join("\r\n");
+    return "\uFEFF" + rows.join("\r\n");
   }
 
   function hasValue(value) {

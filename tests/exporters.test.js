@@ -29,11 +29,22 @@ function requestData() {
 
 test("CSV is a sectioned two-column report", () => {
   const csv = exporters.csv(requestData(), [{ key: "genericName", label: "Generic Name" }]);
-  assert.match(csv, /^"CHANGE REQUEST DETAILS",""\r\n"Field","Value"/);
+  assert.match(csv, /^\uFEFF"CHANGE REQUEST DETAILS",""\r\n"Field","Value"/);
   assert.match(csv, /"Requesting site code","NMH"/);
   assert.match(csv, /"Requesting site","National Maternity Hospital"/);
   assert.match(csv, /\r\n\r\n"CHANGE ITEM 1",""\r\n"Field","Value"/);
   assert.match(csv, /"CHANGE ITEM 2",""/);
+});
+
+test("CSV uses Excel-safe UTF-8 and never exposes internal skipped values", () => {
+  const data = requestData();
+  data.items[0].brandName = "__SKIPPED__";
+  const csv = exporters.csv(data, [{ key: "brandName", label: "Brand Name" }]);
+  assert.equal(csv.charCodeAt(0), 0xFEFF);
+  assert.match(csv, /"Discussion status","For discussion - not approved"/);
+  assert.doesNotMatch(csv, /SKIPPED/);
+  assert.doesNotMatch(exporters.html(data, [{ key: "brandName", label: "Brand Name" }]), /SKIPPED/);
+  assert.doesNotMatch(exporters.json(data), /SKIPPED/);
 });
 
 test("CSV safely quotes commas, quotes and line breaks", () => {

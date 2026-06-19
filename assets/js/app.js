@@ -13,6 +13,7 @@
   var lastDerivedShortSubject = "";
   var lastDerivedRequestTitle = "";
   var lastDerivedOverallReason = "";
+  var lastDerivedRequestSummary = "";
   var metadataGuidance = {
     shortSubject: "Enter only the medicine, order or feature name. This becomes the first part of the filename; do not add CR, site or date.",
     requestTitle: "Summarise the requested change in one sentence so reviewers can identify its purpose.",
@@ -223,7 +224,8 @@
         lastDerivedRequestTitle = derived.requestTitle;
       }
       if (key === "reasonForRequest") {
-        if (!state.items[0].requestSummary) state.items[0].requestSummary = value;
+        state.items[0].requestSummary = window.MnCmsJourney.synchronizedAutomaticText(state.items[0].requestSummary, lastDerivedRequestSummary, value);
+        lastDerivedRequestSummary = value;
         byId("overallReason").value = window.MnCmsJourney.synchronizedOverallReason(byId("overallReason").value, lastDerivedOverallReason, value);
         lastDerivedOverallReason = value;
       }
@@ -498,7 +500,7 @@
     });
     byId("privacyConfirmed").addEventListener("change", refreshPreview);
     byId("downloadCsvButton").addEventListener("click", function () {
-      downloadFile(window.MnCmsExporters.csv(buildRequestData(), getFields()), "csv", "text/csv");
+      downloadFile(window.MnCmsExporters.csv(buildRequestData(), getFields()), "csv", "text/csv;charset=utf-8");
     });
     byId("downloadHtmlButton").addEventListener("click", function () {
       downloadFile(window.MnCmsExporters.html(buildRequestData(), getFields()), "html", "text/html");
@@ -531,6 +533,7 @@
     state.typeId = draft.typeId;
     state.items = draft.items && draft.items.length ? draft.items : [];
     lastDerivedOverallReason = state.items[0] && state.items[0].reasonForRequest === draft.overallReason ? draft.overallReason : "";
+    lastDerivedRequestSummary = state.items[0] && state.items[0].reasonForRequest === state.items[0].requestSummary ? state.items[0].requestSummary : "";
     if (!state.items.length) {
       addItem(false);
     }

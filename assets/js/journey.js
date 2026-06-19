@@ -67,10 +67,10 @@
       requestTitle: clean(data.requestTitle) || (verb + " " + name + (verb === "Add" ? " to" : " in") + " Order Catalog")
     };
   }
-  function synchronizedOverallReason(currentValue, previousAutomaticValue, requestedReason) {
+  function synchronizedAutomaticText(currentValue, previousAutomaticValue, requestedValue) {
     var current = clean(currentValue);
     var previous = clean(previousAutomaticValue);
-    return !current || current === previous ? requestedReason : currentValue;
+    return !current || current === previous ? requestedValue : currentValue;
   }
   function orderCatalogRows(data) {
     var item = firstItem(data || {});
@@ -94,7 +94,8 @@
     nextIncompleteStep: nextIncompleteStep,
     answerComplete: answerComplete,
     derivedMetadata: derivedMetadata,
-    synchronizedOverallReason: synchronizedOverallReason,
+    synchronizedAutomaticText: synchronizedAutomaticText,
+    synchronizedOverallReason: synchronizedAutomaticText,
     orderCatalogRows: orderCatalogRows
   };
 })(typeof window !== "undefined" ? window : globalThis);
