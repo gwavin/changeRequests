@@ -12,6 +12,8 @@ The form supports two views of the same request:
 - **Guide me** starts with plain-language intent and keeps technical template fields optional and collapsed.
 - **Show all fields** opens the full build detail for experienced requesters.
 
+Order Catalog requests now open as a one-question-at-a-time journey. Choosing Add, Modify, or Remove reveals only the relevant questions, while a growing summary shows the request being assembled. Users can switch to the full form without losing entered information. Add requests support multiple strengths; Modify requests distinguish the current and requested state; Remove requests require an explicit removal confirmation.
+
 Exports are enabled when the request contains enough information for team discussion. Technical fields may remain **Not specified / discuss**. Suggested filenames follow `<subject> <type> CR - <site code> <DDMMYYYY>`.
 
 The HTML review is the preferred human-readable output. IV Set requests include a live, Excel-style draft visualisation in the form and the downloaded HTML; SN Anaesthesia requests include a built-output preview.

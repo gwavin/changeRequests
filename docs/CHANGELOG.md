@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-19
+
+- Added a one-question-at-a-time Order Catalog journey with a growing request summary.
+- Added separate Add, Modify, and Remove paths with branch-specific validation.
+- Added repeatable strengths, derived request titles and filenames, and a structured final review.
+- Preserved a lossless switch to the full expert form and local browser draft saving.
+- Kept all outputs discussion-only; removal confirmation does not approve or execute a catalogue change.
+
 ## 2026-06-18
 
 - Replaced free-text requesting sites with approved hospital codes that populate the full site name.
