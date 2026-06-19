@@ -60,6 +60,24 @@
       .some(function (value) { return clean(value); });
   }
 
+  function validateOrderCatalog(data, errors) {
+    var item = (data.items && data.items[0]) || {};
+    var action = clean(item.request);
+    if (["Add", "Modify", "Remove"].indexOf(action) < 0) errors.push({ field: "request", message: "Choose whether to add, modify, or remove an Order Catalog item." });
+    if (!clean(item.genericName)) errors.push({ field: "genericName", message: "Identify the medication or Order Catalog item." });
+    if (!clean(item.reasonForRequest)) errors.push({ field: "reasonForRequest", message: "Explain why the Order Catalog change is needed." });
+    if (!clean(item.referenceState)) errors.push({ field: "referenceState", message: "Say which reference was checked, or choose Not yet checked / Not sure." });
+    if (action === "Add") {
+      var strengths = Array.isArray(item.strengths) ? item.strengths : [item.strength];
+      if (!strengths.some(clean)) errors.push({ field: "strengths", message: "Add at least one strength or presentation." });
+    }
+    if (action === "Modify") {
+      if (!clean(item.currentProductDescription)) errors.push({ field: "currentProductDescription", message: "Describe what the existing Order Catalog item shows today." });
+      if (!clean(item.requestedProductDescription)) errors.push({ field: "requestedProductDescription", message: "Describe what the Order Catalog item should show instead." });
+    }
+    if (action === "Remove" && item.removalConfirmed !== true && item.removalConfirmed !== "Yes") errors.push({ field: "removalConfirmed", message: "Confirm that this request is to remove the identified Order Catalog item." });
+  }
+
   function validate(data) {
     var errors = [];
     [
@@ -84,6 +102,7 @@
     if (data.typeId === "ivSet" && (!Array.isArray(data.items) || data.items.some(function (item) { return !clean(item.nicuInfusion); }))) {
       errors.push({ field: "nicuInfusion", message: "Answer whether each IV Set is for NICU." });
     }
+    if (data.typeId === "orderCatalog") validateOrderCatalog(data, errors);
     return { errors: errors };
   }
 

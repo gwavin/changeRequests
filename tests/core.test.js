@@ -80,7 +80,7 @@ test("IV Set validation requires an explicit NICU answer", () => {
 
 test("readiness distinguishes required information from optional expert detail", () => {
   const result = core.readiness({
-    typeId: "orderCatalog",
+    typeId: "orderSentence",
     shortSubject: "Labetalol",
     requestTitle: "Add labetalol",
     requestingSite: "National Maternity Hospital",
@@ -93,4 +93,15 @@ test("readiness distinguishes required information from optional expert detail",
   assert.equal(result.blocking, 0);
   assert.equal(result.optionalCompleted, 0);
   assert.equal(result.optionalTotal, 2);
+});
+
+test("Order Catalog validation follows Add, Modify and Remove branches", () => {
+  const base = { typeId: "orderCatalog", shortSubject: "Labetalol", requestTitle: "Change labetalol", requestingSite: "National Maternity Hospital", siteCode: "NMH", requesterName: "Example User", overallReason: "Needed", privacyConfirmed: true };
+  const validateItem = (item) => core.validate({ ...base, items: [{ requestSummary: "Change labetalol", reasonForRequest: "Needed", referenceState: "BNF", genericName: "Labetalol", ...item }] }).errors;
+  assert.ok(validateItem({ request: "Add" }).some((error) => error.field === "strengths"));
+  assert.ok(!validateItem({ request: "Add", strengths: ["100 mg"] }).some((error) => error.field === "strengths"));
+  assert.ok(validateItem({ request: "Modify" }).some((error) => error.field === "currentProductDescription"));
+  assert.ok(!validateItem({ request: "Modify", currentProductDescription: "Old", requestedProductDescription: "New" }).some((error) => error.field === "currentProductDescription"));
+  assert.ok(validateItem({ request: "Remove" }).some((error) => error.field === "removalConfirmed"));
+  assert.ok(!validateItem({ request: "Remove", removalConfirmed: true }).some((error) => error.field === "removalConfirmed"));
 });

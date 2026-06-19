@@ -38,6 +38,16 @@
     </div>
 
     <form id="requestForm" class="hidden">
+      <section id="journeyShell" class="journey-shell hidden" aria-labelledby="journeyQuestionHeading">
+        <div class="journey-main">
+          <div class="journey-progress"><span id="journeyStepText"></span><div role="progressbar" id="journeyProgress"></div></div>
+          <div id="journeyAnnouncement" class="sr-only" aria-live="polite"></div>
+          <section id="journeyQuestion" class="journey-question"></section>
+          <p id="journeyError" class="journey-error" tabindex="-1"></p>
+          <div id="journeyActions" class="journey-actions"></div>
+        </div>
+        <aside id="journeySummary" class="journey-summary" aria-label="Your request so far"></aside>
+      </section>
       <section class="form-section">
         <div>
           <p class="section-label">Request details</p>
@@ -171,6 +181,8 @@
   </template>
 
   <script src="assets/js/core.js"></script>
+  <script src="assets/js/journey.js"></script>
+  <script src="assets/js/journey-ui.js"></script>
   <script src="assets/js/schemas.js"></script>
   <script src="assets/js/iv-preview.js"></script>
   <script src="assets/js/storage.js"></script>

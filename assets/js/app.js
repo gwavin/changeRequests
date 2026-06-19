@@ -9,6 +9,9 @@
 
   var metadataIds = ["shortSubject", "requestTitle", "requestingSite", "siteCode", "requesterName", "requesterContact", "urgency", "overallReason"];
   var elements = {};
+  var journeyController = null;
+  var lastDerivedShortSubject = "";
+  var lastDerivedRequestTitle = "";
   var metadataGuidance = {
     shortSubject: "Enter only the medicine, order or feature name. This becomes the first part of the filename; do not add CR, site or date.",
     requestTitle: "Summarise the requested change in one sentence so reviewers can identify its purpose.",
@@ -26,7 +29,7 @@
   }
 
   function initElements() {
-    ["typeGrid", "typeChoice", "stickyType", "currentTypeText", "requestForm", "requestTypeHeading", "typeExplanation", "typeGuidance", "itemsContainer", "itemTemplate", "outputPreview", "exportStatus", "draftStatus", "readinessPanel", "filenamePreview"].forEach(function (id) {
+    ["typeGrid", "typeChoice", "stickyType", "currentTypeText", "requestForm", "requestTypeHeading", "typeExplanation", "typeGuidance", "itemsContainer", "itemTemplate", "outputPreview", "exportStatus", "draftStatus", "readinessPanel", "filenamePreview", "journeyShell"].forEach(function (id) {
       elements[id] = byId(id);
     });
   }
@@ -192,6 +195,58 @@
       renderGuidance(type);
       renderItems();
       refreshPreview();
+      if (type.id === "orderCatalog") initJourney();
+      setMode(state.mode);
+    }
+  }
+
+  function setJourneyAnswer(key, value) {
+    if (["siteCode", "requesterName", "requesterContact", "shortSubject", "requestTitle"].indexOf(key) >= 0) {
+      byId(key).value = value;
+      if (key === "siteCode") normaliseSite();
+    } else if (key === "privacyConfirmed") {
+      byId("privacyConfirmed").checked = !!value;
+    } else {
+      if (!state.items.length) addItem(false);
+      state.items[0][key] = value;
+      if (key === "strengths") state.items[0].strength = (value || [])[0] || "";
+      if (key === "genericName" || key === "request") {
+        var sourceForDerivation = buildRequestData();
+        sourceForDerivation.shortSubject = "";
+        sourceForDerivation.requestTitle = "";
+        var derived = window.MnCmsJourney.derivedMetadata("orderCatalog", sourceForDerivation);
+        var currentSubject = byId("shortSubject").value;
+        var currentTitle = byId("requestTitle").value;
+        if (!currentSubject || currentSubject === lastDerivedShortSubject || currentSubject === "Order Catalog item") byId("shortSubject").value = derived.shortSubject;
+        if (!currentTitle || currentTitle === lastDerivedRequestTitle || currentTitle.indexOf("Order Catalog item") >= 0) byId("requestTitle").value = derived.requestTitle;
+        lastDerivedShortSubject = derived.shortSubject;
+        lastDerivedRequestTitle = derived.requestTitle;
+      }
+      if (key === "reasonForRequest") {
+        if (!state.items[0].requestSummary) state.items[0].requestSummary = value;
+        if (!byId("overallReason").value) byId("overallReason").value = value;
+      }
+    }
+  }
+
+  function initJourney() {
+    if (!journeyController) {
+      journeyController = window.MnCmsJourneyUi.create({
+        root: elements.journeyShell,
+        getData: buildRequestData,
+        setAnswer: setJourneyAnswer,
+        onChange: function () { refreshPreview(); window.MnCmsStorage.saveDraft(buildRequestData()); },
+        onShowExpert: function () { setMode("expert"); },
+        onDownloadHtml: function () { byId("downloadHtmlButton").click(); },
+        onDownloadCsv: function () { byId("downloadCsvButton").click(); },
+        onAddItem: function () { addItem(); setMode("expert"); },
+        onNextType: function (typeId) { selectType(typeId); },
+        siteOptions: window.MnCmsCore.sites,
+        nextTypes: window.MnCmsSchemas.requestTypes.filter(function (type) { return type.id !== "orderCatalog"; })
+      });
+      journeyController.start();
+    } else {
+      journeyController.refresh();
     }
   }
 
@@ -343,6 +398,12 @@
     byId("guidedModeButton").setAttribute("aria-pressed", String(guided));
     byId("expertModeButton").setAttribute("aria-pressed", String(!guided));
     document.querySelectorAll(".technical-details").forEach(function (detail) { detail.open = !guided; });
+    var journeyActive = state.typeId === "orderCatalog" && guided;
+    elements.journeyShell.classList.toggle("hidden", !journeyActive);
+    elements.requestForm.querySelectorAll(":scope > .form-section").forEach(function (section) {
+      section.classList.toggle("journey-suppressed", journeyActive);
+    });
+    if (journeyActive && journeyController) journeyController.refresh();
   }
 
   function copyText(text, successMessage) {
