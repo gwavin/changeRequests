@@ -59,21 +59,19 @@
     heading("Order Catalog template columns"),
     field("request", "Request", "select", { options: options.action }),
     field("reasonForRequest", "Reason for Request", "textarea", { placeholder: "Specify why a new or changed orderable is needed." }),
-    field("referenceState", "Reference status", "select", { options: ["SPC / HPRA", "BNF", "BNFC", "Medicines.ie", "Local guideline or formulary decision", "Other", "Not yet checked", "Not sure"] }),
-    field("referenceChecked", "Reference", "textarea", { placeholder: "SPC/HPRA, BNF, BNFC, Medicines.ie, local guideline, or N/A with reason." }),
-    field("genericName", "Generic Name", "text", { placeholder: "Example: Emtricitabine + Tenofovir alafenamide" }),
-    field("brandName", "Brand Name", "text", { placeholder: "Example: Descovy" }),
-    field("strength", "Strength", "textarea", { placeholder: "Example: 200 mg + 10 mg; 200 mg + 25 mg" }),
+    field("referenceChecked", "Authoritative reference used to confirm clinical correctness", "textarea", { placeholder: "HPRA SPC section, BNF monograph, or dated local formulary decision." }),
+    field("genericName", "Generic Name (preferred)", "text", { placeholder: "Example: Emtricitabine + Tenofovir alafenamide" }),
+    field("brandName", "Brand Name (optional)", "text", { placeholder: "Accepted when clinically or operationally relevant; generic prescribing is preferred." }),
+    field("strength", "Strength / presentation", "textarea", { placeholder: "Especially useful for multi-ingredient products. A separate Order Sentence request will probably be needed." }),
     field("currentProductDescription", "Current Order Catalog wording", "textarea"),
     field("requestedProductDescription", "Requested Order Catalog wording", "textarea"),
     field("replacementImpactState", "Replacement or workflow impact", "select", { options: ["Yes", "No", "Not sure"] }),
     field("replacementImpactDetails", "Replacement / impact details", "textarea"),
     field("hasSafetyRestrictions", "Safety or restriction notes required", "select", { options: ["Yes", "No", "Not sure"] }),
+    field("clinicalCorrectnessConfirmed", "Clinical correctness confirmed by site liaison", "select", { options: ["Yes", "No"] }),
     field("removalConfirmed", "Removal explicitly confirmed", "select", { options: ["Yes", "No"] }),
     heading("Extra build clarity"),
-    field("orderableSynonyms", "Additional synonyms/search words", "textarea", { placeholder: "Other names, abbreviations, old names, or local terms users might search for." }),
-    field("safetyRestrictionNotes", "Safety, formulary, or restriction notes", "textarea", { placeholder: "High-alert, restricted, approval required, or local governance notes." }),
-    field("validationNotes", "Validation notes", "textarea", { placeholder: "How should the requester confirm the item appears and behaves correctly?" })
+    field("safetyRestrictionNotes", "Safety, formulary, or restriction notes", "textarea", { placeholder: "High-alert, restricted, approval required, or local governance notes." })
   ];
 
   var orderSentenceFields = [

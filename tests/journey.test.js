@@ -22,16 +22,20 @@ test("Order Catalog branches expose only relevant questions", () => {
 });
 
 test("conditional detail questions appear only when relevant", () => {
-  assert.ok(!keys(journey.stepsFor("orderCatalog", data("Add", { referenceState: "Not sure" }))).includes("referenceChecked"));
-  assert.ok(keys(journey.stepsFor("orderCatalog", data("Add", { referenceState: "BNF" }))).includes("referenceChecked"));
   assert.ok(!keys(journey.stepsFor("orderCatalog", data("Add", { hasSafetyRestrictions: "No" }))).includes("safetyRestrictionNotes"));
   assert.ok(keys(journey.stepsFor("orderCatalog", data("Add", { hasSafetyRestrictions: "Yes" }))).includes("safetyRestrictionNotes"));
 });
 
+test("Order Catalog begins with governance and uses one clinical reference question", () => {
+  const sequence = keys(journey.stepsFor("orderCatalog", data("Add")));
+  assert.deepEqual(sequence.slice(0, 2), ["siteCode", "requesterName"]);
+  assert.equal(sequence.filter((key) => key === "referenceChecked").length, 1);
+  ["referenceState", "requesterContact", "orderableSynonyms", "validationNotes"].forEach((key) => assert.ok(!sequence.includes(key)));
+  assert.ok(sequence.includes("clinicalCorrectnessConfirmed"));
+});
+
 test("next incomplete step follows answered data", () => {
-  assert.equal(journey.nextIncompleteStep("orderCatalog", data("", {})).key, "request");
-  assert.equal(journey.nextIncompleteStep("orderCatalog", data("Add", {})).key, "genericName");
-  assert.equal(journey.nextIncompleteStep("orderCatalog", data("Add", { genericName: "Labetalol" })).key, "reasonForRequest");
+  assert.equal(journey.nextIncompleteStep("orderCatalog", data("", {})).key, "siteCode");
 });
 
 test("derives metadata without replacing explicit edits", () => {

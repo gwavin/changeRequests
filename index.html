@@ -75,13 +75,11 @@
             <small>Choose the responsible hospital, or National / All Sites for a shared request.</small>
           </label>
           <label>
-            <span>Requester name <b class="required">Required</b></span>
-            <input id="requesterName" name="requesterName" placeholder="Name of person completing this request">
+            <span>Medicines-team liaison <b class="required">Required</b></span>
+            <input id="requesterName" name="requesterName" placeholder="Name of the designated site liaison">
+            <small>Only the designated medicines-team liaison for the selected site may submit a change request.</small>
           </label>
-          <label>
-            <span>Requester contact</span>
-            <input id="requesterContact" name="requesterContact" placeholder="Email or phone extension">
-          </label>
+          <input id="requesterContact" name="requesterContact" type="hidden">
           <label>
             <span>Urgency</span>
             <select id="urgency" name="urgency"><option>Routine / no fixed date</option><option>Needed by a known date</option><option>Potential safety concern</option><option>Not sure</option></select>

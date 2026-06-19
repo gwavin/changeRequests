@@ -3,7 +3,6 @@
 
   var SKIPPED = "__SKIPPED__";
   var actionOptions = ["Add", "Modify", "Remove"];
-  var referenceOptions = ["SPC / HPRA", "BNF", "BNFC", "Medicines.ie", "Local guideline or formulary decision", "Other", "Not yet checked", "Not sure"];
   var yesNoUnsure = ["Yes", "No", "Not sure"];
 
   function clean(value) { return String(value == null ? "" : value).trim(); }
@@ -22,29 +21,22 @@
   function isAdd(data) { return action(data) === "Add"; }
   function isModify(data) { return action(data) === "Modify"; }
   function isRemove(data) { return action(data) === "Remove"; }
-  function referenceNeedsDetail(data) {
-    return ["Not yet checked", "Not sure", ""].indexOf(clean(firstItem(data).referenceState)) < 0;
-  }
-
   var orderCatalogSteps = [
+    step("siteCode", "Which site is requesting this change?", "site", { description: "Choose the site represented by its designated medicines-team liaison." }),
+    step("requesterName", "Who is the medicines-team liaison submitting this request?", "text", { placeholder: "Liaison name", description: "Only the designated medicines-team liaison for the selected site may submit a change request." }),
     step("request", "What do you need to do?", "choice", { options: actionOptions, description: "Choose the outcome you need. Later questions will adapt to your answer." }),
-    step("genericName", "Which medication or Order Catalog item is affected?", "text", { placeholder: "Example: Labetalol", description: "Use the generic name where you know it. Ordinary language is fine if the exact catalogue wording is uncertain." }),
+    step("genericName", "Which medication or Order Catalog item is affected?", "text", { placeholder: "Example: Labetalol", description: "Use the generic name. Generic prescribing is preferred; brand information can be supplied later when it is clinically or operationally relevant." }),
     step("currentProductDescription", "What does the existing item show today?", "textarea", { when: isModify, placeholder: "Describe the current name, brand, strength or search result.", description: "Copy the current wording if available; otherwise describe what users see." }),
     step("requestedProductDescription", "What should it show instead?", "textarea", { when: isModify, placeholder: "Describe the requested replacement wording or outcome.", description: "Keep current and requested values clearly separate." }),
     step("reasonForRequest", "Why is this change needed?", "textarea", { placeholder: "Explain the problem or need in ordinary language.", description: "Describe what is wrong today and why the team should discuss this change." }),
-    step("referenceState", "What reference or decision supports this request?", "choice", { options: referenceOptions, description: "Choose the source used to verify the medication details, or say honestly that it has not yet been checked." }),
-    step("referenceChecked", "Which reference did you check?", "textarea", { when: referenceNeedsDetail, placeholder: "Example: SPC on HPRA, section 2; local formulary decision dated…", description: "Give enough detail for a reviewer to find the source." }),
-    step("brandName", "Is there a brand name to include?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: Trandate", description: "Optional. Skip if the request is generic-only or the brand is unknown." }),
-    step("strengths", "Which strength or presentation is needed?", "strengths", { when: isAdd, description: "Add each distinct strength or presentation. Each will become a separate formal Order Catalog row." }),
-    step("orderableSynonyms", "Should users find it under any other names?", "textarea", { required: false, skipValue: SKIPPED, placeholder: "Brand, abbreviation, former name or local search term", description: "Optional. Add search words that genuinely help users find the item." }),
+    step("referenceChecked", "What authoritative reference did you use to confirm this request is clinically correct?", "textarea", { placeholder: "Example: HPRA SPC, section 2; BNF monograph; dated local formulary decision", description: "Identify the source precisely enough for the medicines team to review it." }),
+    step("brandName", "Is there a clinically relevant brand name to include?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: Trandate", description: "Optional. Generic prescribing is preferred; include a brand only when it is clinically or operationally relevant." }),
+    step("strengths", "Which strength or presentation is needed?", "strengths", { when: isAdd, description: "Include strength, especially for multi-ingredient preparations. Prescribing strengths are normally handled in Order Sentences, so a separate Order Sentence request will probably also be needed." }),
     step("hasSafetyRestrictions", "Are there safety, formulary or restriction notes?", "choice", { options: yesNoUnsure, description: "Choose Yes only when reviewers need specific restrictions or alerts." }),
     step("safetyRestrictionNotes", "What safety or restriction wording is needed?", "textarea", { when: function (data) { return clean(firstItem(data).hasSafetyRestrictions) === "Yes"; }, placeholder: "Describe the alert, restriction or approval requirement." }),
     step("replacementImpactState", "Is there a replacement item or workflow impact?", "choice", { when: isRemove, options: yesNoUnsure, description: "This helps reviewers understand what happens when the item is no longer available." }),
     step("replacementImpactDetails", "Describe the replacement or impact", "textarea", { when: function (data) { return isRemove(data) && clean(firstItem(data).replacementImpactState) !== "No"; }, required: false, skipValue: SKIPPED, placeholder: "Replacement item, affected workflow, or what still needs discussion" }),
-    step("validationNotes", "How will your site check that the result is correct?", "textarea", { required: false, skipValue: "To discuss with the implementing team", placeholder: "Example: Search for each strength and verify the displayed generic and brand names.", description: "Optional, but a short practical check makes the request safer." }),
-    step("siteCode", "Which site is requesting this change?", "site", { description: "Choose the hospital responsible for requesting and validating the change." }),
-    step("requesterName", "Who can reviewers contact about this request?", "text", { placeholder: "Your name" }),
-    step("requesterContact", "What is the best work contact?", "text", { required: false, skipValue: SKIPPED, placeholder: "Work email or telephone extension", description: "Optional. Do not enter patient contact details." }),
+    step("clinicalCorrectnessConfirmed", "Confirm the clinical correctness of this request", "confirm", { confirmText: "I confirm that I have checked the clinical correctness of the requested medication details against the authoritative reference stated above.", description: "Required requester assurance. This does not replace medicines-team review, technical validation, or approval." }),
     step("privacyConfirmed", "Does this request contain no patient-identifiable information?", "confirm", { description: "Required. Change requests must never contain patient-identifiable information." }),
     step("removalConfirmed", "Confirm the requested removal", "confirm", { when: isRemove, confirmText: "I understand this request is to remove the identified Order Catalog item.", description: "This clarifies the request only; it does not approve or execute removal." }),
     step("review", "Review your assembled request", "review", { description: "Check every answer, edit anything that is unclear, then prepare the discussion files." })

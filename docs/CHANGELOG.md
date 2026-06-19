@@ -3,6 +3,10 @@
 ## 2026-06-19
 
 - Added a one-question-at-a-time Order Catalog journey with a growing request summary.
+- Moved site and designated medicines-team liaison identification to the start of the journey and removed the work-contact question.
+- Merged reference collection into one required authoritative-reference answer and added liaison confirmation of clinical correctness.
+- Clarified the preference for generic prescribing, optional clinically relevant brand information, and the likely need for a separate Order Sentence request when strengths are involved.
+- Removed guided synonym suggestions and prospective testing-method questions while retaining older draft values for compatibility.
 - Added separate Add, Modify, and Remove paths with branch-specific validation.
 - Added repeatable strengths, derived request titles and filenames, and a structured final review.
 - Preserved a lossless switch to the full expert form and local browser draft saving.

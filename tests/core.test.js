@@ -97,11 +97,19 @@ test("readiness distinguishes required information from optional expert detail",
 
 test("Order Catalog validation follows Add, Modify and Remove branches", () => {
   const base = { typeId: "orderCatalog", shortSubject: "Labetalol", requestTitle: "Change labetalol", requestingSite: "National Maternity Hospital", siteCode: "NMH", requesterName: "Example User", overallReason: "Needed", privacyConfirmed: true };
-  const validateItem = (item) => core.validate({ ...base, items: [{ requestSummary: "Change labetalol", reasonForRequest: "Needed", referenceState: "BNF", genericName: "Labetalol", ...item }] }).errors;
+  const validateItem = (item) => core.validate({ ...base, items: [{ requestSummary: "Change labetalol", reasonForRequest: "Needed", referenceChecked: "BNF monograph: Labetalol", clinicalCorrectnessConfirmed: true, genericName: "Labetalol", ...item }] }).errors;
   assert.ok(validateItem({ request: "Add" }).some((error) => error.field === "strengths"));
   assert.ok(!validateItem({ request: "Add", strengths: ["100 mg"] }).some((error) => error.field === "strengths"));
   assert.ok(validateItem({ request: "Modify" }).some((error) => error.field === "currentProductDescription"));
   assert.ok(!validateItem({ request: "Modify", currentProductDescription: "Old", requestedProductDescription: "New" }).some((error) => error.field === "currentProductDescription"));
   assert.ok(validateItem({ request: "Remove" }).some((error) => error.field === "removalConfirmed"));
   assert.ok(!validateItem({ request: "Remove", removalConfirmed: true }).some((error) => error.field === "removalConfirmed"));
+});
+
+test("Order Catalog requires a specific reference and liaison clinical confirmation", () => {
+  const base = { typeId: "orderCatalog", shortSubject: "Labetalol", requestTitle: "Add labetalol", requestingSite: "National Maternity Hospital", siteCode: "NMH", requesterName: "Example Liaison", overallReason: "Needed", privacyConfirmed: true };
+  const errors = (item) => core.validate({ ...base, items: [{ request: "Add", requestSummary: "Add labetalol", reasonForRequest: "Needed", genericName: "Labetalol", strengths: ["100 mg"], ...item }] }).errors;
+  assert.ok(errors({ referenceState: "BNF" }).some((error) => error.field === "referenceChecked"));
+  assert.ok(errors({ referenceChecked: "BNF monograph: Labetalol" }).some((error) => error.field === "clinicalCorrectnessConfirmed"));
+  assert.ok(!errors({ referenceChecked: "BNF monograph: Labetalol", clinicalCorrectnessConfirmed: true }).some((error) => ["referenceChecked", "clinicalCorrectnessConfirmed"].includes(error.field)));
 });

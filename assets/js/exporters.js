@@ -53,8 +53,7 @@
       ["CR type", data.typeLabel],
       ["Requesting site code", data.siteCode],
       ["Requesting site", data.requestingSite],
-      ["Requester", data.requesterName],
-      ["Requester contact", data.requesterContact],
+      ["Medicines-team liaison", data.requesterName],
       ["Urgency", data.urgency],
       ["Overall clinical reason", data.overallReason]
     ];
@@ -92,7 +91,7 @@
       "MN-CMS Change Request: " + (data.requestTitle || "Untitled request"),
       "Type: " + data.typeLabel,
       "Site/team: " + valueOrBlank(data.requestingSite),
-      "Requester: " + valueOrBlank(data.requesterName),
+      "Medicines-team liaison: " + valueOrBlank(data.requesterName),
       "",
       "Reason:",
       valueOrBlank(data.overallReason),
@@ -131,7 +130,6 @@
         itemNumber: index + 1,
         requestingSite: data.requestingSite,
         requesterName: data.requesterName,
-        requesterContact: data.requesterContact,
         targetDate: data.targetDate
       };
       fields.forEach(function (field) {
