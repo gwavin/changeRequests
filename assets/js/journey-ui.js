@@ -22,8 +22,8 @@
     var currentKey = "siteCode";
     var typeId = options.typeId;
     var typeLabel = options.typeLabel;
-    rootEl.classList.toggle("os-journey", typeId === "orderSentence");
     var rootEl = options.root;
+    rootEl.classList.toggle("os-journey", typeId === "orderSentence");
     var questionEl = rootEl.querySelector("#journeyQuestion");
     var summaryEl = rootEl.querySelector("#journeySummary");
     var actionsEl = rootEl.querySelector("#journeyActions");

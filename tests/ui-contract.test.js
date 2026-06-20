@@ -17,3 +17,10 @@ test("application routes Order Catalog and Order Sentence through guided entry",
   const app = read("assets/js/app.js");
   assert.match(app, /\["orderCatalog", "orderSentence"\]/);
 });
+
+test("journey root is assigned before it is styled", () => {
+  const journeyUi = read("assets/js/journey-ui.js");
+  const assignment = journeyUi.indexOf("var rootEl = options.root");
+  const styling = journeyUi.indexOf('rootEl.classList.toggle("os-journey"');
+  assert.ok(assignment >= 0 && styling > assignment, "rootEl must exist before classList is used");
+});
