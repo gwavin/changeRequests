@@ -251,7 +251,7 @@
         onDownloadCsv: function () { byId("downloadCsvButton").click(); },
         onNextType: function (typeId) { selectType(typeId); },
         siteOptions: window.MnCmsCore.sites,
-        routeOptions: window.MnCmsSchemas.options.route,
+        templateOptions: window.MnCmsSchemas.options,
         nextTypes: window.MnCmsSchemas.requestTypes.filter(function (candidate) { return candidate.id !== type.id; })
       });
       journeyController.start();

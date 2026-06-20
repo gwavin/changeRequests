@@ -7,13 +7,23 @@
   function item(data) { return (data && data.items && data.items[0]) || {}; }
   function present(value) { return clean(value) || "Not specified"; }
   function join(parts, separator) { return parts.map(clean).filter(Boolean).join(separator || " "); }
+  function filterText(criteria, min, max, unit) {
+    var rule = clean(criteria), lower = clean(min), upper = clean(max), measure = clean(unit);
+    if (!rule) return "";
+    if (rule === "Between") return join([rule, lower, lower && upper ? "and" : "", upper, measure]);
+    return join([rule, lower || upper, measure]);
+  }
 
   function model(data) {
     var current = item(data);
     var medication = clean(current.orderableSynonym) || "Medication not specified";
     var dose = join([current.dose, current.doseUnit]);
     var prn = clean(current.prn) === "Y" ? "PRN" + (clean(current.prnReason) ? " for " + clean(current.prnReason) : "") : "";
-    var filter = clean(current.ageRangeCriteria);
+    var filter = [
+      filterText(current.ageRangeCriteria, current.ageMin, current.ageMax, current.ageUnit),
+      filterText(current.pmaCriteria, current.pmaMin, current.pmaMax, current.pmaUnit),
+      filterText(current.weightCriteria, current.weightMin, current.weightMax, current.weightUnit)
+    ].filter(Boolean).join("; ");
     var details = [
       dose ? "DOSE: " + dose : "",
       clean(current.routeOfAdministration) ? "ROUTE: " + clean(current.routeOfAdministration) : "",

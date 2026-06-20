@@ -31,6 +31,17 @@ test("includes filters and PRN indication in display sentences", () => {
   assert.match(model.selectionLine, /Greater Than or Equal To 12 year/);
 });
 
+test("composes structured patient filters for display", () => {
+  const model = preview.model(data({
+    ageRangeCriteria: "Between", ageMin: "2", ageMax: "12", ageUnit: "year",
+    pmaCriteria: "Less than", pmaMax: "31", pmaUnit: "week",
+    weightCriteria: "Greater than/equal to", weightMin: "50", weightUnit: "kg"
+  }));
+  assert.match(model.selectionLine, /Between 2 and 12 year/);
+  assert.match(model.selectionLine, /Less than 31 week/);
+  assert.match(model.selectionLine, /Greater than\/equal to 50 kg/);
+});
+
 test("remove requests identify the existing sentence without proposing a new build", () => {
   const html = preview.render(data({ request: "Remove", currentValue: "Aspirin 75 mg oral once daily" }));
   assert.match(html, /Proposed removal/);

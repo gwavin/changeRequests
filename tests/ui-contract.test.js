@@ -28,9 +28,9 @@ test("journey root is assigned before it is styled", () => {
 test("Order Sentence route reuses schema options in a select", () => {
   const app = read("assets/js/app.js");
   const journeyUi = read("assets/js/journey-ui.js");
-  assert.match(app, /routeOptions:\s*window\.MnCmsSchemas\.options\.route/);
-  assert.match(journeyUi, /entry\.type === "route"/);
-  assert.match(journeyUi, /options\.routeOptions\.map/);
+  assert.match(app, /templateOptions:\s*window\.MnCmsSchemas\.options/);
+  assert.match(journeyUi, /entry\.type === "templateSelect"/);
+  assert.match(journeyUi, /options\.templateOptions\[entry\.optionKey\]/);
 });
 
 test("Order Sentence places the question above side-by-side OEF and CDL previews", () => {

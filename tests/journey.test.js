@@ -83,7 +83,27 @@ test("Order Sentence uses a site-first guided sequence", () => {
 
 test("Order Sentence route uses the constrained template control", () => {
   const routeStep = journey.stepsFor("orderSentence", data("Add")).find((step) => step.key === "routeOfAdministration");
-  assert.equal(routeStep.type, "route");
+  assert.equal(routeStep.type, "templateSelect");
+  assert.equal(routeStep.optionKey, "route");
+});
+
+test("Order Sentence template dropdowns declare their shared option sources", () => {
+  const steps = journey.stepsFor("orderSentence", data("Add", { prn: "Y", hasPatientFilters: "Yes" }));
+  const expected = {
+    doseUnit: "units", routeOfAdministration: "route", drugForm: "form", frequency: "frequency",
+    prnReason: "prnReason", ageRangeCriteria: "criteria", ageUnit: "ageUnit",
+    pmaCriteria: "criteria", pmaUnit: "pmaUnit", weightCriteria: "criteria", weightUnit: "weightUnit"
+  };
+  Object.entries(expected).forEach(([key, optionKey]) => {
+    const entry = steps.find((step) => step.key === key);
+    assert.equal(entry.type, "templateSelect", key);
+    assert.equal(entry.optionKey, optionKey, key);
+  });
+});
+
+test("Order Sentence patient filters collect structured boundaries", () => {
+  const sequence = keys(journey.stepsFor("orderSentence", data("Add", { hasPatientFilters: "Yes" })));
+  ["ageMin", "ageMax", "ageUnit", "pmaMin", "pmaMax", "pmaUnit", "weightMin", "weightMax", "weightUnit"].forEach((key) => assert.ok(sequence.includes(key), key));
 });
 
 test("Order Sentence reveals branch and PRN details only when relevant", () => {

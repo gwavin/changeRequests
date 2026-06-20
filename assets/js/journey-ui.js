@@ -52,13 +52,13 @@
       }
       if (entry.type === "textarea") return "<textarea id=\"journeyAnswer\" rows=\"5\" placeholder=\"" + escapeHtml(entry.placeholder || "") + "\">" + escapeHtml(current === root.MnCmsJourney.SKIPPED ? "" : current || "") + "</textarea>";
       if (entry.type === "site") return "<select id=\"journeyAnswer\"><option value=\"\">Choose a site</option>" + options.siteOptions.map(function (site) { return "<option value=\"" + site.code + "\"" + (current === site.code ? " selected" : "") + ">" + site.code + " — " + escapeHtml(site.name) + "</option>"; }).join("") + "</select>";
-      if (entry.type === "route") return "<select id=\"journeyAnswer\"><option value=\"\">Choose a route</option>" + options.routeOptions.map(function (route) { return "<option value=\"" + escapeHtml(route) + "\"" + (current === route ? " selected" : "") + ">" + escapeHtml(route) + "</option>"; }).join("") + "</select>";
+      if (entry.type === "templateSelect") return "<select id=\"journeyAnswer\"><option value=\"\">Choose an option</option>" + (options.templateOptions[entry.optionKey] || []).filter(Boolean).map(function (option) { return "<option value=\"" + escapeHtml(option) + "\"" + (current === option ? " selected" : "") + ">" + escapeHtml(option) + "</option>"; }).join("") + "</select>";
       if (entry.type === "confirm") return "<label class=\"journey-confirm\"><input id=\"journeyAnswer\" type=\"checkbox\"" + (current === true ? " checked" : "") + "><span>" + escapeHtml(entry.confirmText || "Yes — this request contains no patient-identifiable information") + "</span></label>";
       if (entry.type === "strengths") {
         var values = Array.isArray(current) && current.length ? current : [""];
         return "<div id=\"journeyStrengths\" class=\"journey-strengths\">" + values.map(function (strength, index) { return "<div><label>Strength or presentation " + (index + 1) + "<input data-strength-index=\"" + index + "\" value=\"" + escapeHtml(strength) + "\" placeholder=\"Example: 100 mg tablet\"></label>" + (values.length > 1 ? "<button type=\"button\" class=\"secondary small\" data-remove-strength=\"" + index + "\">Remove</button>" : "") + "</div>"; }).join("") + "<button type=\"button\" class=\"secondary\" id=\"addStrengthButton\">Add another strength</button></div>";
       }
-      return "<input id=\"journeyAnswer\" type=\"text\" value=\"" + escapeHtml(current === root.MnCmsJourney.SKIPPED ? "" : current || "") + "\" placeholder=\"" + escapeHtml(entry.placeholder || "") + "\">";
+      return "<input id=\"journeyAnswer\" type=\"" + (entry.type === "number" ? "number" : "text") + "\" value=\"" + escapeHtml(current === root.MnCmsJourney.SKIPPED ? "" : current || "") + "\" placeholder=\"" + escapeHtml(entry.placeholder || "") + "\">";
     }
     function bindAnswer(entry) {
       if (entry.type === "choice") {
@@ -71,7 +71,7 @@
         questionEl.querySelectorAll("[data-remove-strength]").forEach(function (button) { button.addEventListener("click", function () { var values = strengthValues(); values.splice(Number(button.dataset.removeStrength), 1); set(entry.key, values); render(); }); });
       } else {
         var control = questionEl.querySelector("#journeyAnswer");
-        var eventName = entry.type === "confirm" || entry.type === "site" || entry.type === "route" ? "change" : "input";
+        var eventName = entry.type === "confirm" || entry.type === "site" || entry.type === "templateSelect" ? "change" : "input";
         control.addEventListener(eventName, function () { set(entry.key, entry.type === "confirm" ? control.checked : control.value); });
       }
     }
