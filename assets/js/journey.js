@@ -91,7 +91,7 @@
     step("requesterName", "Who is the medicines-team liaison submitting this request?", "text", { placeholder: "Liaison name", description: "Only the designated medicines-team liaison for the selected site may submit a change request." }),
     step("request", "What do you need to do to this IV Set?", "templateSelect", { optionKey: "action" }),
     step("nicuInfusion", "Is this infusion intended for NICU?", "templateSelect", { optionKey: "yesNo", description: "A Yes or No answer is required." }),
-    step("description", "Which IV Set is affected?", "text", { placeholder: "Proposed or existing IV Set name" }),
+    step("description", "Which IV Set is affected?", "text", { placeholder: "Example: Labetalol Adult IV Infusion", description: "This Description is how the medication appears in the order search window or the body of a Care Plan. Use [Medication Name] Adult IV Infusion for adults (for example, Labetalol Adult IV Infusion), or NICU [Medication Name] IV Infusion for NICU (for example, NICU Naloxone IV Infusion)." }),
     step("currentValue", "What does the current IV Set show?", "textarea", { when: isModify }),
     step("requestedValue", "What should it show instead?", "textarea", { when: isModify }),
     step("reasonForRequest", "Why is this IV Set change needed?", "textarea"),

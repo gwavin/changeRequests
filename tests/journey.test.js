@@ -149,3 +149,10 @@ test("IV Set asks for additives only when not ready-diluted", () => {
   assert.ok(!ready.includes("additiveOrderableSynonym"));
   assert.ok(prepared.includes("diluentOrderableSynonym") && prepared.includes("additiveOrderableSynonym"));
 });
+
+test("IV Set naming question explains the approved Adult and NICU nomenclature", () => {
+  const description = journey.stepsFor("ivSet", data("Add")).find((step) => step.key === "description");
+  assert.match(description.description, /\[Medication Name\] Adult IV Infusion/);
+  assert.match(description.description, /NICU \[Medication Name\] IV Infusion/);
+  assert.match(description.description, /order search window|Care Plan/);
+});
