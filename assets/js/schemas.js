@@ -110,6 +110,7 @@
     field("specialInstructions", "Special Instructions (max 255 characters)", "textarea"),
     field("giveFirstDoseNow", "Give First Dose Now: Y / N / blank", "select", { options: options.yesNoBlank }),
     field("duration", "Duration", "text"),
+    field("durationUnit", "Duration Unit", "text"),
     field("orderComments", "Order Comments", "textarea"),
     field("clinicalCorrectnessConfirmed", "Clinical correctness confirmed by site liaison", "select", { options: ["Yes", "No"] }),
     field("validationNotes", "Validation notes", "textarea")

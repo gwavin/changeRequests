@@ -13,6 +13,8 @@ Order Catalog requests open as a one-question-at-a-time journey. Choosing Add, M
 
 Order Sentence requests use the same guided-only approach. They collect site governance, clinical intent and reference first, then reveal prescribing details such as dose, route, frequency, PRN indication, duration, population restrictions, and current/requested wording only where relevant.
 
+As Order Sentence details are entered, read-only OEF and CDL request mockups update beside the journey. The OEF mirrors the supplied Details and Order Comments layout; the CDL shows the selectable sentence and expected ordered display line. At final review, selecting a populated mockup field returns to its owning guided question. These are discussion mockups, not live clinical-system screens.
+
 Only the designated medicines-team liaison for a site should submit a request. Order Catalog requests require a specific authoritative reference and the liaison's confirmation that the medication details have been checked for clinical correctness. Generic prescribing is preferred; relevant brand details are accepted. Strength information is useful, especially for multi-ingredient products, but a separate Order Sentence request will probably be needed because prescribing strengths are normally handled there.
 
 Exports are enabled when the request contains enough information for team discussion. Technical fields may remain **Not specified / discuss**. Suggested filenames follow `<subject> <type> CR - <site code> <DDMMYYYY>`.

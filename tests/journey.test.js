@@ -85,3 +85,11 @@ test("derives Order Sentence metadata", () => {
     shortSubject: "Labetalol", requestTitle: "Add Labetalol Order Sentence"
   });
 });
+
+test("Order Sentence includes supplied OEF build details and conditional filters", () => {
+  const base = keys(journey.stepsFor("orderSentence", data("Add", { hasPatientFilters: "No" })));
+  ["giveFirstDoseNow", "durationUnit", "specialInstructions", "orderComments", "hasPatientFilters"].forEach((key) => assert.ok(base.includes(key)));
+  assert.ok(!base.includes("pmaCriteria") && !base.includes("weightCriteria"));
+  const filtered = keys(journey.stepsFor("orderSentence", data("Add", { hasPatientFilters: "Yes" })));
+  ["ageRangeCriteria", "pmaCriteria", "weightCriteria"].forEach((key) => assert.ok(filtered.includes(key)));
+});

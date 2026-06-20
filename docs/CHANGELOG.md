@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-06-20
+
+- Added progressively populated OEF and CDL request mockups to the Order Sentence journey and downloaded HTML review, based on the supplied build-reference document.
+- Added final-review click-to-question navigation from populated Order Sentence preview fields.
+- Added Give First Dose Now, duration unit, Order Comments, and conditional age/PMA/weight restriction questions.
+
 ## 2026-06-19
 
 - Removed the guidance-mode choice and expert escape from completed journeys so users answer one question at a time.

@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 global.window = {};
 require("../assets/js/core.js");
+require("../assets/js/os-preview.js");
 require("../assets/js/exporters.js");
 
 const exporters = global.window.MnCmsExporters;
@@ -51,4 +52,15 @@ test("CSV safely quotes commas, quotes and line breaks", () => {
   const csv = exporters.csv(requestData(), [{ key: "genericName", label: "Generic Name" }]);
   assert.match(csv, /"Request title","Add labetalol, with review"/);
   assert.match(csv, /"Overall clinical reason","Needed for ""standard"" prescribing\. Discuss locally\."/);
+});
+
+test("Order Sentence HTML includes the same OEF and CDL request mockups", () => {
+  const data = requestData();
+  data.typeId = "orderSentence";
+  data.typeLabel = "Order Sentence";
+  data.items = [{ request: "Add", requestSummary: "Add sentence", orderableSynonym: "Aspirin", dose: "75", doseUnit: "mg", routeOfAdministration: "oral", drugForm: "tablet", frequency: "ONCE a day" }];
+  const html = exporters.html(data, [{ key: "dose", label: "Dose" }]);
+  assert.match(html, /OEF - while ordering/);
+  assert.match(html, /CDL - after ordering/);
+  assert.match(html, /Aspirin/);
 });
