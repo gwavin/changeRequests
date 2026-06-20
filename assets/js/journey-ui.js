@@ -52,6 +52,7 @@
       }
       if (entry.type === "textarea") return "<textarea id=\"journeyAnswer\" rows=\"5\" placeholder=\"" + escapeHtml(entry.placeholder || "") + "\">" + escapeHtml(current === root.MnCmsJourney.SKIPPED ? "" : current || "") + "</textarea>";
       if (entry.type === "site") return "<select id=\"journeyAnswer\"><option value=\"\">Choose a site</option>" + options.siteOptions.map(function (site) { return "<option value=\"" + site.code + "\"" + (current === site.code ? " selected" : "") + ">" + site.code + " — " + escapeHtml(site.name) + "</option>"; }).join("") + "</select>";
+      if (entry.type === "route") return "<select id=\"journeyAnswer\"><option value=\"\">Choose a route</option>" + options.routeOptions.map(function (route) { return "<option value=\"" + escapeHtml(route) + "\"" + (current === route ? " selected" : "") + ">" + escapeHtml(route) + "</option>"; }).join("") + "</select>";
       if (entry.type === "confirm") return "<label class=\"journey-confirm\"><input id=\"journeyAnswer\" type=\"checkbox\"" + (current === true ? " checked" : "") + "><span>" + escapeHtml(entry.confirmText || "Yes — this request contains no patient-identifiable information") + "</span></label>";
       if (entry.type === "strengths") {
         var values = Array.isArray(current) && current.length ? current : [""];
@@ -70,7 +71,7 @@
         questionEl.querySelectorAll("[data-remove-strength]").forEach(function (button) { button.addEventListener("click", function () { var values = strengthValues(); values.splice(Number(button.dataset.removeStrength), 1); set(entry.key, values); render(); }); });
       } else {
         var control = questionEl.querySelector("#journeyAnswer");
-        var eventName = entry.type === "confirm" || entry.type === "site" ? "change" : "input";
+        var eventName = entry.type === "confirm" || entry.type === "site" || entry.type === "route" ? "change" : "input";
         control.addEventListener(eventName, function () { set(entry.key, entry.type === "confirm" ? control.checked : control.value); });
       }
     }
@@ -103,8 +104,9 @@
       }
       rows.unshift(["Medicines-team liaison", data.requesterName, "requesterName"]); rows.unshift(["Site", data.requestingSite || data.siteCode, "siteCode"]);
       rows.push(["Clinical correctness", currentItem.clinicalCorrectnessConfirmed, "clinicalCorrectnessConfirmed"]);
-      var livePreview = typeId === "orderSentence" && root.MnCmsOsPreview ? root.MnCmsOsPreview.render(data) : "";
-      summaryEl.innerHTML = "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(display(row[1])) + "</dd>" + (display(row[1]) !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>" + livePreview;
+      var livePreview = typeId === "orderSentence" && root.MnCmsOsPreview ? root.MnCmsOsPreview.render(data, { interactive: currentStep().type === "review" }) : "";
+      summaryEl.classList.toggle("os-preview-region", typeId === "orderSentence");
+      summaryEl.innerHTML = typeId === "orderSentence" ? livePreview : "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { var shown = row[2] === "strengths" && row[1] === root.MnCmsJourney.SKIPPED ? "Not supplied" : display(row[1]); return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(shown) + "</dd>" + (shown !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>";
       summaryEl.querySelectorAll("[data-edit-step]").forEach(function (button) { button.addEventListener("click", function () { currentKey = button.dataset.editStep; render(); }); });
     }
     function renderReview(data) {
@@ -113,7 +115,7 @@
       var columns = root.MnCmsJourney.reviewColumns(typeId);
       var currentItem = item(data);
       var strengthGuidance = currentItem.request === "Add" && display(currentItem.strengths) !== "Not answered" ? "<p class=\"journey-warning\"><strong>Order Sentence likely required:</strong> Prescribing strengths are normally handled in Order Sentences, particularly for multi-ingredient preparations. Please submit a separate Order Sentence request where applicable.</p>" : "";
-      var finalPreview = typeId === "orderSentence" && root.MnCmsOsPreview ? root.MnCmsOsPreview.render(data, { interactive: true }) : "";
+      var finalPreview = "";
       var branchDetails = currentItem.request === "Modify" ? "<div class=\"review-branch-details\"><div><span>Current</span><strong>" + escapeHtml(display(currentItem.currentProductDescription || currentItem.currentValue)) + "</strong></div><div><span>Requested</span><strong>" + escapeHtml(display(currentItem.requestedProductDescription || currentItem.requestedValue)) + "</strong></div></div>" : (currentItem.request === "Remove" ? "<div class=\"review-branch-details\"><div><span>Removal request</span><strong>Explicitly confirmed</strong></div></div>" : "");
       questionEl.innerHTML = "<div class=\"journey-review\"><h2 id=\"journeyQuestionHeading\">Review your assembled request</h2><p class=\"journey-status\">For discussion - not approved</p><div class=\"review-derived\"><label>Short subject<input data-review-meta=\"shortSubject\" value=\"" + escapeHtml(meta.shortSubject) + "\"></label><label>Request title<input data-review-meta=\"requestTitle\" value=\"" + escapeHtml(meta.requestTitle) + "\"></label></div>" + branchDetails + "<div class=\"review-table-wrap\"><table><thead><tr>" + columns.map(function (column) { return "<th>" + escapeHtml(column[1]) + "</th>"; }).join("") + "</tr></thead><tbody>" + rows.map(function (row) { return "<tr>" + columns.map(function (column) { return "<td>" + escapeHtml(row[column[0]]) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>" + finalPreview + strengthGuidance + "<div class=\"review-actions\"><button type=\"button\" data-download=\"html\">Download HTML review</button><button type=\"button\" data-download=\"csv\">Download CSV</button></div><div class=\"next-cr\"><h3>What would you like to do next?</h3><p>Your request remains a discussion draft. You can start another type if needed.</p><div>" + options.nextTypes.map(function (type) { return "<button type=\"button\" class=\"secondary\" data-next-type=\"" + type.id + "\">" + escapeHtml(type.label) + "</button>"; }).join("") + "</div></div></div>";
       questionEl.querySelectorAll("[data-review-meta]").forEach(function (control) { control.addEventListener("input", function () { set(control.dataset.reviewMeta, control.value); }); });

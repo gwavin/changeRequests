@@ -24,3 +24,21 @@ test("journey root is assigned before it is styled", () => {
   const styling = journeyUi.indexOf('rootEl.classList.toggle("os-journey"');
   assert.ok(assignment >= 0 && styling > assignment, "rootEl must exist before classList is used");
 });
+
+test("Order Sentence route reuses schema options in a select", () => {
+  const app = read("assets/js/app.js");
+  const journeyUi = read("assets/js/journey-ui.js");
+  assert.match(app, /routeOptions:\s*window\.MnCmsSchemas\.options\.route/);
+  assert.match(journeyUi, /entry\.type === "route"/);
+  assert.match(journeyUi, /options\.routeOptions\.map/);
+});
+
+test("Order Sentence places the question above side-by-side OEF and CDL previews", () => {
+  const journeyUi = read("assets/js/journey-ui.js");
+  const css = read("assets/css/styles.css");
+  assert.match(journeyUi, /os-preview-region/);
+  assert.match(css, /\.journey-shell\.os-journey\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(css, /\.journey-shell\.os-journey \.journey-main\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/s);
+  assert.match(css, /\.journey-shell\.os-journey \.journey-summary\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/s);
+  assert.match(css, /\.os-preview-pair\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr/s);
+});

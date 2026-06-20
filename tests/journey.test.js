@@ -52,6 +52,15 @@ test("creates one formal row per requested strength", () => {
   assert.ok(rows.every((row) => row.genericName === "Labetalol" && row.request === "Add"));
 });
 
+test("Order Catalog strength can be deliberately omitted", () => {
+  const strengthStep = journey.stepsFor("orderCatalog", data("Add")).find((step) => step.key === "strengths");
+  assert.equal(strengthStep.required, false);
+  assert.equal(strengthStep.skipValue, journey.SKIPPED);
+  const rows = journey.orderCatalogRows(data("Add", { genericName: "Labetalol", strengths: journey.SKIPPED }));
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].strength, "Not supplied");
+});
+
 test("keeps the overall reason synchronized until the user edits it", () => {
   assert.equal(journey.synchronizedOverallReason("", "", "p"), "p");
   assert.equal(journey.synchronizedOverallReason("p", "p", "practice"), "practice");
@@ -70,6 +79,11 @@ test("Order Sentence uses a site-first guided sequence", () => {
   assert.ok(sequence.includes("orderableSynonym"));
   assert.ok(sequence.includes("clinicalCorrectnessConfirmed"));
   assert.ok(!sequence.includes("currentValue"));
+});
+
+test("Order Sentence route uses the constrained template control", () => {
+  const routeStep = journey.stepsFor("orderSentence", data("Add")).find((step) => step.key === "routeOfAdministration");
+  assert.equal(routeStep.type, "route");
 });
 
 test("Order Sentence reveals branch and PRN details only when relevant", () => {

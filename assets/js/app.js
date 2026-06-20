@@ -211,7 +211,7 @@
     } else {
       if (!state.items.length) addItem(false);
       state.items[0][key] = value;
-      if (key === "strengths") state.items[0].strength = (value || [])[0] || "";
+      if (key === "strengths") state.items[0].strength = Array.isArray(value) ? (value[0] || "") : "";
       if (key === "genericName" || key === "orderableSynonym" || key === "request") {
         var sourceForDerivation = buildRequestData();
         sourceForDerivation.shortSubject = "";
@@ -251,6 +251,7 @@
         onDownloadCsv: function () { byId("downloadCsvButton").click(); },
         onNextType: function (typeId) { selectType(typeId); },
         siteOptions: window.MnCmsCore.sites,
+        routeOptions: window.MnCmsSchemas.options.route,
         nextTypes: window.MnCmsSchemas.requestTypes.filter(function (candidate) { return candidate.id !== type.id; })
       });
       journeyController.start();

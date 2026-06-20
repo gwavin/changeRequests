@@ -31,7 +31,7 @@
     step("reasonForRequest", "Why is this change needed?", "textarea", { placeholder: "Explain the problem or need in ordinary language.", description: "Describe what is wrong today and why the team should discuss this change." }),
     step("referenceChecked", "What authoritative reference did you use to confirm this request is clinically correct?", "textarea", { placeholder: "Example: HPRA SPC, section 2; BNF monograph; dated local formulary decision", description: "Identify the source precisely enough for the medicines team to review it." }),
     step("brandName", "Is there a clinically relevant brand name to include?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: Trandate", description: "Optional. Generic prescribing is preferred; include a brand only when it is clinically or operationally relevant." }),
-    step("strengths", "Which strength or presentation is needed?", "strengths", { when: isAdd, description: "Include strength, especially for multi-ingredient preparations. Prescribing strengths are normally handled in Order Sentences, so a separate Order Sentence request will probably also be needed." }),
+    step("strengths", "Which strength or presentation is needed?", "strengths", { when: isAdd, required: false, skipValue: SKIPPED, description: "Include strength where known, especially for multi-ingredient preparations, or skip to record Not supplied. Prescribing strengths are normally handled in Order Sentences, so a separate Order Sentence request will probably also be needed." }),
     step("hasSafetyRestrictions", "Are there safety, formulary or restriction notes?", "choice", { options: yesNoUnsure, description: "Choose Yes only when reviewers need specific restrictions or alerts." }),
     step("safetyRestrictionNotes", "What safety or restriction wording is needed?", "textarea", { when: function (data) { return clean(firstItem(data).hasSafetyRestrictions) === "Yes"; }, placeholder: "Describe the alert, restriction or approval requirement." }),
     step("replacementImpactState", "Is there a replacement item or workflow impact?", "choice", { when: isRemove, options: yesNoUnsure, description: "This helps reviewers understand what happens when the item is no longer available." }),
@@ -55,7 +55,7 @@
     step("facilities", "Should it apply locally or across all sites?", "choice", { options: ["Local", "All", "Not sure"] }),
     step("dose", "What dose or strength should the sentence contain?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: 100" }),
     step("doseUnit", "What is the dose unit?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: mg or micrograms/kg" }),
-    step("routeOfAdministration", "Which route should be used?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: oral or intravenous" }),
+    step("routeOfAdministration", "Which route should be used?", "route", { required: false, skipValue: SKIPPED }),
     step("drugForm", "Which drug form is needed?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: tablet or solution for injection" }),
     step("frequency", "What frequency is needed?", "text", { required: false, skipValue: SKIPPED, placeholder: "Example: twice daily" }),
     step("prn", "Is this a PRN (when required) sentence?", "choice", { options: ["Y", "N", "Not sure"] }),
@@ -112,7 +112,9 @@
   function orderCatalogRows(data) {
     var item = firstItem(data || {});
     var strengths = Array.isArray(item.strengths) ? item.strengths.filter(function (value) { return clean(value); }) : [];
+    if (item.strengths === SKIPPED) strengths = ["Not supplied"];
     if (!strengths.length) strengths = [clean(item.strength)];
+    if (!strengths[0]) strengths = ["Not supplied"];
     return strengths.map(function (strength) {
       return {
         request: clean(item.request), reasonForRequest: clean(item.reasonForRequest),
