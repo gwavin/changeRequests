@@ -197,7 +197,7 @@
       renderGuidance(type);
       renderItems();
       refreshPreview();
-      if (["orderCatalog", "orderSentence"].indexOf(type.id) >= 0) initJourney(type);
+      if (["orderCatalog", "orderSentence", "ivSet"].indexOf(type.id) >= 0) initJourney(type);
       setMode("guided");
     }
   }
@@ -402,7 +402,7 @@
 
   function setMode(mode) {
     state.mode = "guided";
-    var journeyActive = ["orderCatalog", "orderSentence"].indexOf(state.typeId) >= 0;
+    var journeyActive = ["orderCatalog", "orderSentence", "ivSet"].indexOf(state.typeId) >= 0;
     elements.journeyShell.classList.toggle("hidden", !journeyActive);
     elements.requestForm.querySelectorAll(":scope > .form-section").forEach(function (section) {
       section.classList.toggle("journey-suppressed", journeyActive);

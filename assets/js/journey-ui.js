@@ -24,6 +24,7 @@
     var typeLabel = options.typeLabel;
     var rootEl = options.root;
     rootEl.classList.toggle("os-journey", typeId === "orderSentence");
+    rootEl.classList.toggle("iv-journey", typeId === "ivSet");
     var questionEl = rootEl.querySelector("#journeyQuestion");
     var summaryEl = rootEl.querySelector("#journeySummary");
     var actionsEl = rootEl.querySelector("#journeyActions");
@@ -105,8 +106,10 @@
       rows.unshift(["Medicines-team liaison", data.requesterName, "requesterName"]); rows.unshift(["Site", data.requestingSite || data.siteCode, "siteCode"]);
       rows.push(["Clinical correctness", currentItem.clinicalCorrectnessConfirmed, "clinicalCorrectnessConfirmed"]);
       var livePreview = typeId === "orderSentence" && root.MnCmsOsPreview ? root.MnCmsOsPreview.render(data, { interactive: currentStep().type === "review" }) : "";
+      var ivPreview = typeId === "ivSet" && root.MnCmsIvPreview ? root.MnCmsIvPreview.renderPair(currentItem) : "";
       summaryEl.classList.toggle("os-preview-region", typeId === "orderSentence");
-      summaryEl.innerHTML = typeId === "orderSentence" ? livePreview : "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { var shown = row[2] === "strengths" && row[1] === root.MnCmsJourney.SKIPPED ? "Not supplied" : display(row[1]); return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(shown) + "</dd>" + (shown !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>";
+      summaryEl.classList.toggle("iv-preview-region", typeId === "ivSet");
+      summaryEl.innerHTML = typeId === "orderSentence" ? livePreview : (typeId === "ivSet" ? ivPreview : "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { var shown = row[2] === "strengths" && row[1] === root.MnCmsJourney.SKIPPED ? "Not supplied" : display(row[1]); return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(shown) + "</dd>" + (shown !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>");
       summaryEl.querySelectorAll("[data-edit-step]").forEach(function (button) { button.addEventListener("click", function () { currentKey = button.dataset.editStep; render(); }); });
     }
     function renderReview(data) {

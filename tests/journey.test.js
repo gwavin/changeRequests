@@ -127,3 +127,25 @@ test("Order Sentence includes supplied OEF build details and conditional filters
   const filtered = keys(journey.stepsFor("orderSentence", data("Add", { hasPatientFilters: "Yes" })));
   ["ageRangeCriteria", "pmaCriteria", "weightCriteria"].forEach((key) => assert.ok(filtered.includes(key)));
 });
+
+test("IV Set uses a site-first guided sequence with mandatory NICU status", () => {
+  const steps = journey.stepsFor("ivSet", data("Add"));
+  assert.deepEqual(keys(steps).slice(0, 4), ["siteCode", "requesterName", "request", "nicuInfusion"]);
+  assert.equal(steps.find((step) => step.key === "nicuInfusion").required, true);
+});
+
+test("IV Set adapts Add, Modify and Remove branches", () => {
+  const add = keys(journey.stepsFor("ivSet", data("Add")));
+  const modify = keys(journey.stepsFor("ivSet", data("Modify")));
+  const remove = keys(journey.stepsFor("ivSet", data("Remove")));
+  assert.ok(add.includes("readyDiluted") && add.includes("bagVolume"));
+  assert.ok(modify.includes("currentValue") && modify.includes("requestedValue"));
+  assert.ok(remove.includes("removalConfirmed") && !remove.includes("bagVolume"));
+});
+
+test("IV Set asks for additives only when not ready-diluted", () => {
+  const ready = keys(journey.stepsFor("ivSet", data("Add", { readyDiluted: "Yes" })));
+  const prepared = keys(journey.stepsFor("ivSet", data("Add", { readyDiluted: "No" })));
+  assert.ok(!ready.includes("additiveOrderableSynonym"));
+  assert.ok(prepared.includes("diluentOrderableSynonym") && prepared.includes("additiveOrderableSynonym"));
+});

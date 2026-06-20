@@ -15,7 +15,7 @@ test("completed journeys expose no expert or full-form choice", () => {
 
 test("application routes Order Catalog and Order Sentence through guided entry", () => {
   const app = read("assets/js/app.js");
-  assert.match(app, /\["orderCatalog", "orderSentence"\]/);
+  assert.match(app, /\["orderCatalog", "orderSentence", "ivSet"\]/);
 });
 
 test("journey root is assigned before it is styled", () => {
@@ -41,4 +41,12 @@ test("Order Sentence places the question above side-by-side OEF and CDL previews
   assert.match(css, /\.journey-shell\.os-journey \.journey-main\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/s);
   assert.match(css, /\.journey-shell\.os-journey \.journey-summary\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/s);
   assert.match(css, /\.os-preview-pair\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr/s);
+});
+
+test("IV Set journey mounts paired PowerChart previews below the question", () => {
+  const journeyUi = read("assets/js/journey-ui.js");
+  const css = read("assets/css/styles.css");
+  assert.match(journeyUi, /iv-preview-region/);
+  assert.match(journeyUi, /MnCmsIvPreview\.renderPair/);
+  assert.match(css, /\.iv-journey-pair\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr/s);
 });

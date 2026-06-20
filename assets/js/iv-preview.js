@@ -113,5 +113,10 @@
     ].join("");
   }
 
-  root.MnCmsIvPreview = { render: render, derivedTitle: derivedTitle };
+  function renderPair(item) {
+    item = item || {};
+    return "<section class=\"iv-journey-pair\" aria-label=\"Draft IV Set visualisation\"><div class=\"iv-journey-view\"><h3>Details mock-up</h3>" + detailsPanel(item, false) + "</div><div class=\"iv-journey-view\"><h3>Continuous Details mock-up</h3>" + continuousPanel(item, false) + "</div></section>";
+  }
+
+  root.MnCmsIvPreview = { render: render, renderPair: renderPair, derivedTitle: derivedTitle };
 })(typeof window !== "undefined" ? window : globalThis);

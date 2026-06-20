@@ -40,3 +40,11 @@ test("renders editable clinical-style Details and Continuous Details tabs", () =
   assert.match(html, /aria-selected="true"[^>]*>Continuous Details/);
   assert.match(window.MnCmsIvPreview.render({ readyDiluted: "Yes" }), /Ready-Diluted/);
 });
+
+test("renders paired read-only Details and Continuous Details views", () => {
+  const html = window.MnCmsIvPreview.renderPair({ readyDiluted: "No", diluentOrderableSynonym: "Sodium Chloride 0.9%" });
+  assert.match(html, /iv-journey-pair/);
+  assert.match(html, /Details mock-up/);
+  assert.match(html, /Continuous Details mock-up/);
+  assert.doesNotMatch(html, /data-preview-field=/);
+});
