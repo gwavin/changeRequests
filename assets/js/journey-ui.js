@@ -14,8 +14,13 @@
   function display(valueToShow) {
     if (valueToShow === true) return "Confirmed";
     if (valueToShow === root.MnCmsJourney.SKIPPED) return "To discuss";
+    if (valueToShow && typeof valueToShow === "object" && valueToShow.name) return valueToShow.name;
     if (Array.isArray(valueToShow)) return valueToShow.filter(clean).join(", ") || "Not answered";
     return clean(valueToShow) || "Not answered";
+  }
+  function imagePreviewMarkup(image, compact) {
+    if (!image || !image.dataUrl) return "";
+    return "<figure class=\"" + (compact ? "journey-image-preview compact" : "journey-image-preview") + "\"><img src=\"" + escapeHtml(image.dataUrl) + "\" alt=\"" + escapeHtml(image.name || "Attached screenshot") + "\"><figcaption>" + escapeHtml(image.name || "Attached image") + "</figcaption></figure>";
   }
 
   function create(options) {
@@ -52,6 +57,9 @@
         }).join("") + "</div>";
       }
       if (entry.type === "textarea") return "<textarea id=\"journeyAnswer\" rows=\"5\" placeholder=\"" + escapeHtml(entry.placeholder || "") + "\">" + escapeHtml(current === root.MnCmsJourney.SKIPPED ? "" : current || "") + "</textarea>";
+      if (entry.type === "image") {
+        return "<div class=\"journey-image-control\">" + imagePreviewMarkup(current, false) + "<input id=\"journeyAnswer\" type=\"file\" accept=\"image/*\"><div class=\"journey-image-actions\">" + (current && current.dataUrl ? "<button type=\"button\" class=\"secondary\" data-remove-image>Remove image</button>" : "") + "</div></div>";
+      }
       if (entry.type === "site") return "<select id=\"journeyAnswer\"><option value=\"\">Choose a site</option>" + options.siteOptions.map(function (site) { return "<option value=\"" + site.code + "\"" + (current === site.code ? " selected" : "") + ">" + site.code + " — " + escapeHtml(site.name) + "</option>"; }).join("") + "</select>";
       if (entry.type === "templateSelect") return "<select id=\"journeyAnswer\"><option value=\"\">Choose an option</option>" + (options.templateOptions[entry.optionKey] || []).filter(Boolean).map(function (option) { return "<option value=\"" + escapeHtml(option) + "\"" + (current === option ? " selected" : "") + ">" + escapeHtml(option) + "</option>"; }).join("") + "</select>";
       if (entry.type === "confirm") return "<label class=\"journey-confirm\"><input id=\"journeyAnswer\" type=\"checkbox\"" + (current === true ? " checked" : "") + "><span>" + escapeHtml(entry.confirmText || "Yes — this request contains no patient-identifiable information") + "</span></label>";
@@ -70,6 +78,25 @@
         var add = questionEl.querySelector("#addStrengthButton");
         add.addEventListener("click", function () { var values = strengthValues(); values.push(""); set(entry.key, values); render(); });
         questionEl.querySelectorAll("[data-remove-strength]").forEach(function (button) { button.addEventListener("click", function () { var values = strengthValues(); values.splice(Number(button.dataset.removeStrength), 1); set(entry.key, values); render(); }); });
+      } else if (entry.type === "image") {
+        var imageControl = questionEl.querySelector("#journeyAnswer");
+        imageControl.addEventListener("change", function () {
+          var file = imageControl.files && imageControl.files[0];
+          if (!file) return;
+          if (!file.type || file.type.indexOf("image/") !== 0) {
+            errorEl.textContent = "Please choose an image file.";
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function () {
+            set(entry.key, { name: file.name, type: file.type, size: file.size, dataUrl: reader.result });
+            render();
+          };
+          reader.onerror = function () { errorEl.textContent = "Could not read that image file."; };
+          reader.readAsDataURL(file);
+        });
+        var remove = questionEl.querySelector("[data-remove-image]");
+        if (remove) remove.addEventListener("click", function () { set(entry.key, ""); render(); });
       } else {
         var control = questionEl.querySelector("#journeyAnswer");
         var eventName = entry.type === "confirm" || entry.type === "site" || entry.type === "templateSelect" ? "change" : "input";
@@ -96,7 +123,7 @@
         ["Reason", currentItem.reasonForRequest, "reasonForRequest"], ["Authoritative reference", currentItem.referenceChecked, "referenceChecked"]
       ];
       if (typeId === "orderCatalog" && currentItem.request === "Add") rows.push(["Strengths", currentItem.strengths, "strengths"]);
-      if (currentItem.request === "Modify") { rows.push(["Current", currentItem.currentProductDescription, "currentProductDescription"]); rows.push(["Requested", currentItem.requestedProductDescription, "requestedProductDescription"]); }
+      if (currentItem.request === "Modify") { rows.push(["Current", currentItem.currentProductDescription, "currentProductDescription"]); rows.push(["Current screenshot / image", currentItem.currentItemImage, "currentItemImage"]); rows.push(["Requested", currentItem.requestedProductDescription, "requestedProductDescription"]); }
       if (currentItem.request === "Remove") rows.push(["Replacement / impact", currentItem.replacementImpactDetails || currentItem.replacementImpactState, "replacementImpactState"]);
       if (typeId === "orderSentence") {
         rows.push(["Dose", [currentItem.dose, currentItem.doseUnit].filter(clean).join(" "), "dose"]);
@@ -109,7 +136,7 @@
       var ivPreview = typeId === "ivSet" && root.MnCmsIvPreview ? root.MnCmsIvPreview.renderPair(currentItem) : "";
       summaryEl.classList.toggle("os-preview-region", typeId === "orderSentence");
       summaryEl.classList.toggle("iv-preview-region", typeId === "ivSet");
-      summaryEl.innerHTML = typeId === "orderSentence" ? livePreview : (typeId === "ivSet" ? ivPreview : "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { var shown = row[2] === "strengths" && row[1] === root.MnCmsJourney.SKIPPED ? "Not supplied" : display(row[1]); return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(shown) + "</dd>" + (shown !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>");
+      summaryEl.innerHTML = typeId === "orderSentence" ? livePreview : (typeId === "ivSet" ? ivPreview : "<div class=\"journey-summary-heading\"><p class=\"section-label\">Your request so far</p><h3>" + escapeHtml(typeLabel) + "</h3></div><dl>" + rows.map(function (row) { var shown = row[2] === "strengths" && row[1] === root.MnCmsJourney.SKIPPED ? "Not supplied" : display(row[1]); var imageMarkup = row[2] === "currentItemImage" ? imagePreviewMarkup(row[1], true) : ""; return "<div><dt>" + escapeHtml(row[0]) + "</dt><dd>" + imageMarkup + escapeHtml(shown) + "</dd>" + (shown !== "Not answered" && root.MnCmsJourney.stepByKey(typeId, data, row[2]) ? "<button type=\"button\" class=\"summary-edit\" data-edit-step=\"" + row[2] + "\">Edit</button>" : "") + "</div>"; }).join("") + "</dl>");
       summaryEl.querySelectorAll("[data-edit-step]").forEach(function (button) { button.addEventListener("click", function () { currentKey = button.dataset.editStep; render(); }); });
     }
     function renderReview(data) {
@@ -119,7 +146,7 @@
       var currentItem = item(data);
       var strengthGuidance = currentItem.request === "Add" && display(currentItem.strengths) !== "Not answered" ? "<p class=\"journey-warning\"><strong>Order Sentence likely required:</strong> Prescribing strengths are normally handled in Order Sentences, particularly for multi-ingredient preparations. Please submit a separate Order Sentence request where applicable.</p>" : "";
       var finalPreview = "";
-      var branchDetails = currentItem.request === "Modify" ? "<div class=\"review-branch-details\"><div><span>Current</span><strong>" + escapeHtml(display(currentItem.currentProductDescription || currentItem.currentValue)) + "</strong></div><div><span>Requested</span><strong>" + escapeHtml(display(currentItem.requestedProductDescription || currentItem.requestedValue)) + "</strong></div></div>" : (currentItem.request === "Remove" ? "<div class=\"review-branch-details\"><div><span>Removal request</span><strong>Explicitly confirmed</strong></div></div>" : "");
+      var branchDetails = currentItem.request === "Modify" ? "<div class=\"review-branch-details\"><div><span>Current</span><strong>" + escapeHtml(display(currentItem.currentProductDescription || currentItem.currentValue)) + "</strong>" + imagePreviewMarkup(currentItem.currentItemImage, false) + "</div><div><span>Requested</span><strong>" + escapeHtml(display(currentItem.requestedProductDescription || currentItem.requestedValue)) + "</strong></div></div>" : (currentItem.request === "Remove" ? "<div class=\"review-branch-details\"><div><span>Removal request</span><strong>Explicitly confirmed</strong></div></div>" : "");
       questionEl.innerHTML = "<div class=\"journey-review\"><h2 id=\"journeyQuestionHeading\">Review your assembled request</h2><p class=\"journey-status\">For discussion - not approved</p><div class=\"review-derived\"><label>Short subject<input data-review-meta=\"shortSubject\" value=\"" + escapeHtml(meta.shortSubject) + "\"></label><label>Request title<input data-review-meta=\"requestTitle\" value=\"" + escapeHtml(meta.requestTitle) + "\"></label></div>" + branchDetails + "<div class=\"review-table-wrap\"><table><thead><tr>" + columns.map(function (column) { return "<th>" + escapeHtml(column[1]) + "</th>"; }).join("") + "</tr></thead><tbody>" + rows.map(function (row) { return "<tr>" + columns.map(function (column) { return "<td>" + escapeHtml(row[column[0]]) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>" + finalPreview + strengthGuidance + "<div class=\"review-actions\"><button type=\"button\" data-download=\"html\">Download HTML review</button><button type=\"button\" data-download=\"csv\">Download CSV</button></div><div class=\"next-cr\"><h3>What would you like to do next?</h3><p>Your request remains a discussion draft. You can start another type if needed.</p><div>" + options.nextTypes.map(function (type) { return "<button type=\"button\" class=\"secondary\" data-next-type=\"" + type.id + "\">" + escapeHtml(type.label) + "</button>"; }).join("") + "</div></div></div>";
       questionEl.querySelectorAll("[data-review-meta]").forEach(function (control) { control.addEventListener("input", function () { set(control.dataset.reviewMeta, control.value); }); });
       questionEl.querySelector('[data-download="html"]').addEventListener("click", options.onDownloadHtml);

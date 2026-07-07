@@ -64,6 +64,7 @@
     field("brandName", "Brand Name (optional)", "text", { placeholder: "Accepted when clinically or operationally relevant; generic prescribing is preferred." }),
     field("strength", "Strength / presentation", "textarea", { placeholder: "Especially useful for multi-ingredient products. A separate Order Sentence request will probably be needed." }),
     field("currentProductDescription", "Current Order Catalog wording", "textarea"),
+    field("currentItemImage", "Current item screenshot / image", "image", { helper: "Optional. Attach a screenshot or image only if it helps reviewers understand what users see today. Do not include patient-identifiable information." }),
     field("requestedProductDescription", "Requested Order Catalog wording", "textarea"),
     field("replacementImpactState", "Replacement or workflow impact", "select", { options: ["Yes", "No", "Not sure"] }),
     field("replacementImpactDetails", "Replacement / impact details", "textarea"),

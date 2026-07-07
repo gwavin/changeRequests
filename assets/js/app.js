@@ -60,6 +60,13 @@
     labelText.appendChild(help);
   }
 
+  function imagePreviewMarkup(image) {
+    if (!image || !image.dataUrl) return "";
+    var name = image.name || "Attached image";
+    var escapedName = name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return "<figure class=\"journey-image-preview\"><img src=\"" + image.dataUrl + "\" alt=\"" + escapedName + "\"><figcaption>" + escapedName + "</figcaption></figure>";
+  }
+
   function initFieldGuidance() {
     Object.keys(metadataGuidance).forEach(function (id) {
       if (id === "requestSummary") return;
@@ -348,26 +355,57 @@
         } else if (field.type === "textarea") {
           control = document.createElement("textarea");
           control.rows = 3;
+        } else if (field.type === "image") {
+          control = document.createElement("input");
+          control.type = "file";
+          control.accept = "image/*";
         } else {
           control = document.createElement("input");
           control.type = field.inputType || "text";
         }
         control.dataset.fieldKey = field.key;
-        control.value = item[field.key] || "";
+        if (field.type !== "image") control.value = item[field.key] || "";
         control.placeholder = field.placeholder || "";
-        control.addEventListener("input", function () {
-          item[field.key] = control.value;
-          renderLivePreview();
-          refreshPreview();
-        });
-        control.addEventListener("change", function () {
-          item[field.key] = control.value;
-          renderLivePreview();
-          refreshPreview();
-        });
+        if (field.type === "image") {
+          control.addEventListener("change", function () {
+            var file = control.files && control.files[0];
+            if (!file || !file.type || file.type.indexOf("image/") !== 0) return;
+            var reader = new FileReader();
+            reader.onload = function () {
+              item[field.key] = { name: file.name, type: file.type, size: file.size, dataUrl: reader.result };
+              renderItems();
+              refreshPreview();
+            };
+            reader.readAsDataURL(file);
+          });
+        } else {
+          control.addEventListener("input", function () {
+            item[field.key] = control.value;
+            renderLivePreview();
+            refreshPreview();
+          });
+          control.addEventListener("change", function () {
+            item[field.key] = control.value;
+            renderLivePreview();
+            refreshPreview();
+          });
+        }
         label.innerHTML = "<span>" + field.label + "</span>";
         addFieldHelp(label, field.helper || ("Enter the requested " + field.label.toLowerCase() + ". Leave it unspecified if it requires team discussion."), "item-" + index + "-" + field.key);
         label.appendChild(control);
+        if (field.type === "image" && item[field.key] && item[field.key].dataUrl) {
+          var removeImage = document.createElement("button");
+          removeImage.type = "button";
+          removeImage.className = "secondary small";
+          removeImage.textContent = "Remove image";
+          removeImage.addEventListener("click", function () {
+            item[field.key] = "";
+            renderItems();
+            refreshPreview();
+          });
+          label.insertAdjacentHTML("beforeend", imagePreviewMarkup(item[field.key]));
+          label.appendChild(removeImage);
+        }
         if (field.helper) {
           var small = document.createElement("small");
           small.textContent = field.helper;

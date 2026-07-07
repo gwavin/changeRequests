@@ -27,6 +27,7 @@
     step("request", "What do you need to do?", "choice", { options: actionOptions, description: "Choose the outcome you need. Later questions will adapt to your answer." }),
     step("genericName", "Which medication or Order Catalog item is affected?", "text", { placeholder: "Example: Labetalol", description: "Use the generic name. Generic prescribing is preferred; brand information can be supplied later when it is clinically or operationally relevant." }),
     step("currentProductDescription", "What does the existing item show today?", "textarea", { when: isModify, placeholder: "Describe the current name, brand, strength or search result.", description: "Copy the current wording if available; otherwise describe what users see." }),
+    step("currentItemImage", "Do you want to attach a screenshot or image of what users see today?", "image", { when: isModify, required: false, skipValue: SKIPPED, description: "Optional. Attach a screenshot or image only if it helps reviewers understand the existing Order Catalog item. Do not include patient-identifiable information." }),
     step("requestedProductDescription", "What should it show instead?", "textarea", { when: isModify, placeholder: "Describe the requested replacement wording or outcome.", description: "Keep current and requested values clearly separate." }),
     step("reasonForRequest", "Why is this change needed?", "textarea", { placeholder: "Explain the problem or need in ordinary language.", description: "Describe what is wrong today and why the team should discuss this change." }),
     step("referenceChecked", "What authoritative reference did you use to confirm this request is clinically correct?", "textarea", { placeholder: "Example: HPRA SPC, section 2; BNF monograph; dated local formulary decision", description: "Identify the source precisely enough for the medicines team to review it." }),
@@ -128,6 +129,7 @@
     var value = read(data || {}, entry.key);
     if (entry.type === "strengths") return Array.isArray(value) && value.some(function (item) { return clean(item); });
     if (entry.type === "confirm") return value === true || value === "Yes";
+    if (entry.type === "image") return !!(value && value.dataUrl);
     return clean(value) !== "";
   }
   function nextIncompleteStep(typeId, data) {
@@ -168,7 +170,8 @@
         request: clean(item.request), reasonForRequest: clean(item.reasonForRequest),
         reference: clean(item.referenceChecked || item.referenceState), genericName: clean(item.genericName),
         brandName: clean(item.brandName) === SKIPPED ? "" : clean(item.brandName), strength: strength,
-        currentValue: clean(item.currentProductDescription), requestedValue: clean(item.requestedProductDescription)
+        currentValue: clean(item.currentProductDescription), currentItemImage: item.currentItemImage && item.currentItemImage.name ? item.currentItemImage.name : "",
+        requestedValue: clean(item.requestedProductDescription)
       };
     });
   }

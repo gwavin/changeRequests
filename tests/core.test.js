@@ -3,8 +3,12 @@ const assert = require("node:assert/strict");
 
 global.window = {};
 require("../assets/js/core.js");
+require("../assets/js/journey.js");
+require("../assets/js/exporters.js");
 
 const core = global.window.MnCmsCore;
+const journey = global.window.MnCmsJourney;
+const exporters = global.window.MnCmsExporters;
 
 test("resolves approved requesting sites by code", () => {
   assert.deepEqual(core.siteForCode("TCH"), { code: "TCH", name: "The Coombe Hospital" });
@@ -112,6 +116,37 @@ test("Order Catalog requires a specific reference and liaison clinical confirmat
   assert.ok(errors({ referenceState: "BNF" }).some((error) => error.field === "referenceChecked"));
   assert.ok(errors({ referenceChecked: "BNF monograph: Labetalol" }).some((error) => error.field === "clinicalCorrectnessConfirmed"));
   assert.ok(!errors({ referenceChecked: "BNF monograph: Labetalol", clinicalCorrectnessConfirmed: true }).some((error) => ["referenceChecked", "clinicalCorrectnessConfirmed"].includes(error.field)));
+});
+
+test("Order Catalog modify requests can include an optional current item image", () => {
+  const data = {
+    typeId: "orderCatalog",
+    typeLabel: "Order Catalog",
+    shortSubject: "Labetalol",
+    requestTitle: "Modify labetalol",
+    requestingSite: "National Maternity Hospital",
+    siteCode: "NMH",
+    requesterName: "Example Liaison",
+    urgency: "Routine / no fixed date",
+    overallReason: "Needed",
+    privacyConfirmed: true,
+    responsibilityStatement: "Review required.",
+    items: [{
+      request: "Modify",
+      requestSummary: "Modify labetalol",
+      reasonForRequest: "Needed",
+      referenceChecked: "BNF monograph: Labetalol",
+      clinicalCorrectnessConfirmed: true,
+      genericName: "Labetalol",
+      currentProductDescription: "Old wording",
+      requestedProductDescription: "New wording",
+      currentItemImage: { name: "current-item.png", type: "image/png", size: 68, dataUrl: "data:image/png;base64,abc123" }
+    }]
+  };
+  assert.equal(core.validate(data).errors.length, 0);
+  assert.ok(journey.reviewRows("orderCatalog", data)[0].currentItemImage.includes("current-item.png"));
+  assert.match(exporters.csv(data, global.window.MnCmsSchemas ? global.window.MnCmsSchemas.fieldsForType("orderCatalog") : [{ key: "currentItemImage", label: "Current item screenshot / image" }]), /current-item\.png/);
+  assert.match(exporters.html(data, [{ key: "currentItemImage", label: "Current item screenshot / image", type: "image" }]), /<img src="data:image\/png;base64,abc123"/);
 });
 
 test("Order Sentence requires clinical intent, reference and liaison confirmation", () => {
