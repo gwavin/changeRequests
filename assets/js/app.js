@@ -256,6 +256,7 @@
         onChange: function () { refreshPreview(); window.MnCmsStorage.saveDraft(buildRequestData()); },
         onDownloadHtml: function () { byId("downloadHtmlButton").click(); },
         onDownloadCsv: function () { byId("downloadCsvButton").click(); },
+        onEmailAgenda: emailToAgenda,
         onNextType: function (typeId) { selectType(typeId); },
         siteOptions: window.MnCmsCore.sites,
         templateOptions: window.MnCmsSchemas.options,
@@ -435,7 +436,7 @@
       ? "<strong>Ready for team discussion</strong><p>Essential information is present. Optional technical detail completed: " + result.optionalCompleted + " of " + result.optionalTotal + " fields.</p>"
       : "<strong>" + result.blocking + " essential item" + (result.blocking === 1 ? "" : "s") + " still needed</strong><ul>" + result.errors.map(function (error) { return "<li>" + error.message + "</li>"; }).join("") + "</ul>";
     elements.filenamePreview.textContent = data.shortSubject && data.siteCode ? window.MnCmsCore.fileBase(data) + ".html / .csv" : "Complete the short subject and site code above";
-    ["downloadCsvButton", "downloadHtmlButton"].forEach(function (id) { byId(id).disabled = !ready; });
+    ["downloadCsvButton", "downloadHtmlButton", "emailAgendaButton"].forEach(function (id) { byId(id).disabled = !ready; });
   }
 
   function setMode(mode) {
@@ -496,6 +497,20 @@
     setStatus(elements.exportStatus, "Prepared " + filename);
   }
 
+  function emailToAgenda(statusElement) {
+    var data = buildRequestData();
+    var validation = window.MnCmsCore.validate(data);
+    var target = statusElement || elements.exportStatus;
+    if (validation.errors.length) {
+      setStatus(target, "Complete the essential discussion details before preparing the email.");
+      elements.readinessPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    window.location.href = window.MnCmsEmailAgenda.mailto(data, getFields());
+    setStatus(target, "A prepared email has been opened. Review it and press Send to submit this request for discussion.");
+    return true;
+  }
+
   function saveWithPicker(content, filename, mime) {
     return window.showSaveFilePicker({
       suggestedName: filename
@@ -542,6 +557,7 @@
     byId("downloadHtmlButton").addEventListener("click", function () {
       downloadFile(window.MnCmsExporters.html(buildRequestData(), getFields()), "html", "text/html");
     });
+    byId("emailAgendaButton").addEventListener("click", function () { emailToAgenda(); });
     byId("saveDraftButton").addEventListener("click", function () {
       window.MnCmsStorage.saveDraft(buildRequestData());
       setStatus(elements.draftStatus, "Draft saved in this browser.");

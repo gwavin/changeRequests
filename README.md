@@ -21,4 +21,6 @@ Exports are enabled when the request contains enough information for team discus
 
 The HTML review is the preferred human-readable output. IV Set requests include a live, Excel-style draft visualisation in the form and the downloaded HTML; SN Anaesthesia requests include a built-output preview.
 
+Discussion-ready requests can also open a prepared email to the MN-CMS Meds Agenda. The user must review the draft and press Send in their mail client; the builder does not send email automatically.
+
 This repo should not contain real patient data, credentials, tokens, or sensitive operational material.

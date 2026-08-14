@@ -50,3 +50,17 @@ test("IV Set journey mounts paired PowerChart previews below the question", () =
   assert.match(journeyUi, /MnCmsIvPreview\.renderPair/);
   assert.match(css, /\.iv-journey-pair\s*\{[^}]*grid-template-columns:\s*1fr\s+1fr/s);
 });
+
+test("guided and standard outputs expose Email to Agenda through the shared app callback", () => {
+  const markup = read("index.html");
+  const app = read("assets/js/app.js");
+  const journeyUi = read("assets/js/journey-ui.js");
+  assert.match(markup, /id="emailAgendaButton"[^>]*>Email to Agenda</);
+  assert.match(journeyUi, /data-email-agenda>Email to Agenda</);
+  assert.match(journeyUi, /options\.onEmailAgenda/);
+  assert.match(app, /onEmailAgenda:\s*emailToAgenda/);
+  assert.match(app, /MnCmsCore\.validate\(data\)/);
+  assert.match(app, /MnCmsEmailAgenda\.mailto\(data, getFields\(\)\)/);
+  assert.ok(app.indexOf("if (validation.errors.length)", app.indexOf("function emailToAgenda")) < app.indexOf("window.location.href", app.indexOf("function emailToAgenda")), "validation must block navigation");
+  assert.doesNotMatch(app, /fetch\(|XMLHttpRequest|graph\.microsoft|sharepoint/i);
+});
