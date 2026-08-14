@@ -178,7 +178,19 @@
       announcementEl.textContent = stepTextEl.textContent + ": " + entry.title;
       var heading = questionEl.querySelector("#journeyQuestionHeading"); if (heading) heading.focus();
     }
-    return { start: function () { var incomplete = root.MnCmsJourney.nextIncompleteStep(typeId, options.getData()); currentKey = incomplete ? incomplete.key : "siteCode"; render(); }, refresh: render, goTo: function (key) { currentKey = key; render(); }, destroy: function () { rootEl.innerHTML = ""; } };
+    return {
+      start: function () { var incomplete = root.MnCmsJourney.nextIncompleteStep(typeId, options.getData()); currentKey = incomplete ? incomplete.key : "siteCode"; render(); },
+      refresh: render,
+      goTo: function (key) { currentKey = key; render(); },
+      showValidation: function (errors) {
+        var first = errors && errors[0];
+        if (first && root.MnCmsJourney.stepByKey(typeId, options.getData(), first.field)) currentKey = first.field;
+        render();
+        errorEl.textContent = "Cannot prepare the email: " + (errors || []).map(function (error) { return error.message; }).join(" ");
+        errorEl.focus();
+      },
+      destroy: function () { rootEl.innerHTML = ""; }
+    };
   }
   root.MnCmsJourneyUi = { create: create };
 })(window);

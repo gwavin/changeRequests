@@ -64,3 +64,13 @@ test("guided and standard outputs expose Email to Agenda through the shared app 
   assert.ok(app.indexOf("if (validation.errors.length)", app.indexOf("function emailToAgenda")) < app.indexOf("window.location.href", app.indexOf("function emailToAgenda")), "validation must block navigation");
   assert.doesNotMatch(app, /fetch\(|XMLHttpRequest|graph\.microsoft|sharepoint/i);
 });
+
+test("guided email validation identifies the blocker and returns to its question", () => {
+  const app = read("assets/js/app.js");
+  const journeyUi = read("assets/js/journey-ui.js");
+  assert.match(app, /journeyController\.showValidation\(validation\.errors\)/);
+  assert.match(journeyUi, /showValidation:\s*function \(errors\)/);
+  assert.match(journeyUi, /currentKey = first\.field/);
+  assert.match(journeyUi, /Cannot prepare the email:/);
+  assert.match(journeyUi, /errorEl\.focus\(\)/);
+});

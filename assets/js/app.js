@@ -502,8 +502,12 @@
     var validation = window.MnCmsCore.validate(data);
     var target = statusElement || elements.exportStatus;
     if (validation.errors.length) {
-      setStatus(target, "Complete the essential discussion details before preparing the email.");
-      elements.readinessPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (statusElement && journeyController) {
+        journeyController.showValidation(validation.errors);
+      } else {
+        setStatus(target, "Cannot prepare the email: " + validation.errors.map(function (error) { return error.message; }).join(" "));
+        elements.readinessPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return false;
     }
     window.location.href = window.MnCmsEmailAgenda.mailto(data, getFields());
